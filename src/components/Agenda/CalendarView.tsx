@@ -1,15 +1,31 @@
 import React, { useState } from 'react';
+import { useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Plus, Clock, User } from 'lucide-react';
 import { Appointment } from '../../types';
-import { mockAppointments, mockExpedientes } from '../../data/mockData';
+import { appointmentsAPI } from '../../services/api';
 import AppointmentModal from './AppointmentModal';
 
 const CalendarView: React.FC = () => {
-  const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    fetchAppointments();
+  }, []);
+
+  const fetchAppointments = async () => {
+    try {
+      const response = await appointmentsAPI.getAll();
+      setAppointments(response.data);
+    } catch (error) {
+      console.error('Error fetching appointments:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   const monthNames = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
@@ -42,7 +58,7 @@ const CalendarView: React.FC = () => {
 
   const getAppointmentsForDate = (date: Date) => {
     return appointments.filter(apt => 
-      apt.date.toDateString() === date.toDateString()
+      new Date(apt.date).toDateString() === date.toDateString()
     );
   };
 
@@ -58,18 +74,32 @@ const CalendarView: React.FC = () => {
     setSelectedDate(date);
   };
 
-  const handleAddAppointment = (appointmentData: Omit<Appointment, 'id' | 'organizationId'>) => {
-    const newAppointment: Appointment = {
-      ...appointmentData,
-      id: Date.now().toString(),
-      organizationId: '1'
-    };
-    setAppointments([...appointments, newAppointment]);
-    setShowModal(false);
+  const handleAddAppointment = async (appointmentData: Omit<Appointment, 'id' | 'organizationId'>) => {
+    try {
+      const response = await appointmentsAPI.create(appointmentData);
+      setAppointments([...appointments, response.data]);
+      setShowModal(false);
+    } catch (error) {
+      console.error('Error creating appointment:', error);
+      alert('Error al crear cita');
+    }
   };
 
   const days = getDaysInMonth(currentDate);
   const selectedDateAppointments = selectedDate ? getAppointmentsForDate(selectedDate) : [];
+
+  if (loading) {
+    return (
+      <div className="p-6 bg-gray-50 min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-12">
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Cargando agenda...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">

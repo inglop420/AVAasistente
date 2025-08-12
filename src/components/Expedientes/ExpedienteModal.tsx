@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Expediente } from '../../types';
-import { mockClients } from '../../data/mockData';
+import { clientsAPI } from '../../services/api';
 
 interface ExpedienteModalProps {
   expediente: Expediente | null;
@@ -18,6 +18,21 @@ const ExpedienteModal: React.FC<ExpedienteModalProps> = ({ expediente, onSave, o
     dueDate: ''
   });
 
+  const [clients, setClients] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchClients();
+  }, []);
+
+  const fetchClients = async () => {
+    try {
+      const response = await clientsAPI.getAll();
+      setClients(response.data);
+    } catch (error) {
+      console.error('Error fetching clients:', error);
+    }
+  };
+
   useEffect(() => {
     if (expediente) {
       setFormData({
@@ -33,7 +48,7 @@ const ExpedienteModal: React.FC<ExpedienteModalProps> = ({ expediente, onSave, o
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const client = mockClients.find(c => c.id === formData.clientId);
+    const client = clients.find(c => c.id === formData.clientId);
     const expedienteData = {
       ...formData,
       clientName: client?.name || formData.clientName,
@@ -53,7 +68,7 @@ const ExpedienteModal: React.FC<ExpedienteModalProps> = ({ expediente, onSave, o
 
   const handleClientChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const clientId = e.target.value;
-    const client = mockClients.find(c => c.id === clientId);
+    const client = clients.find(c => c.id === clientId);
     
     setFormData(prev => ({
       ...prev,
@@ -105,7 +120,7 @@ const ExpedienteModal: React.FC<ExpedienteModalProps> = ({ expediente, onSave, o
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Seleccionar cliente</option>
-              {mockClients.map(client => (
+              {clients.map(client => (
                 <option key={client.id} value={client.id}>
                   {client.name}
                 </option>

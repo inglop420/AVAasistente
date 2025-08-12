@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Organization } from '../types';
-import { mockUsers, mockOrganizations } from '../data/mockData';
+import { authAPI } from '../services/api';
 
 interface AuthContextType {
   user: User | null;
@@ -27,12 +27,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     // Check for stored auth data
+    const storedToken = localStorage.getItem('ava_token');
     const storedUser = localStorage.getItem('ava_user');
-    if (storedUser) {
+    
+    if (storedToken && storedUser) {
       const userData = JSON.parse(storedUser);
       setUser(userData);
-      const org = mockOrganizations.find(o => o.id === userData.organizationId);
-      setOrganization(org || null);
+      // Set organization from user data
+      setOrganization({
+        id: userData.organizationId,
+        name: 'Organización', // This could be fetched from backend
+        createdAt: new Date()
+      });
     }
     setIsLoading(false);
   }, []);
@@ -40,27 +46,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const foundUser = mockUsers.find(u => u.email === email);
-    
-    if (foundUser && password === 'demo123') {
-      setUser(foundUser);
-      const org = mockOrganizations.find(o => o.id === foundUser.organizationId);
-      setOrganization(org || null);
-      localStorage.setItem('ava_user', JSON.stringify(foundUser));
+    try {
+      const response = await authAPI.login(email, password);
+      const { token, user: userData } = response.data;
+      
+      // Store token and user data
+      localStorage.setItem('ava_token', token);
+      localStorage.setItem('ava_user', JSON.stringify(userData));
+      
+      setUser(userData);
+      setOrganization({
+        id: userData.organizationId,
+        name: 'Organización',
+        createdAt: new Date()
+      });
+      
       setIsLoading(false);
       return true;
+    } catch (error) {
+      console.error('Login error:', error);
+      setIsLoading(false);
+      return false;
     }
-    
-    setIsLoading(false);
-    return false;
   };
 
   const logout = () => {
     setUser(null);
     setOrganization(null);
+    localStorage.removeItem('ava_token');
     localStorage.removeItem('ava_user');
   };
 

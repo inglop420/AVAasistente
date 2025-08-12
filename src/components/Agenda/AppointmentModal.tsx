@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { Appointment } from '../../types';
-import { mockClients, mockExpedientes } from '../../data/mockData';
+import { expedientesAPI } from '../../services/api';
 
 interface AppointmentModalProps {
   onSave: (appointment: Omit<Appointment, 'id' | 'organizationId'>) => void;
@@ -20,6 +20,21 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({ onSave, onClose, de
     status: 'programada' as Appointment['status']
   });
 
+  const [expedientes, setExpedientes] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchExpedientes();
+  }, []);
+
+  const fetchExpedientes = async () => {
+    try {
+      const response = await expedientesAPI.getAll();
+      setExpedientes(response.data);
+    } catch (error) {
+      console.error('Error fetching expedientes:', error);
+    }
+  };
+
   useEffect(() => {
     if (defaultDate) {
       setFormData(prev => ({
@@ -33,7 +48,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({ onSave, onClose, de
     e.preventDefault();
     
     const appointmentDateTime = new Date(`${formData.date}T${formData.time}`);
-    const expediente = mockExpedientes.find(e => e.id === formData.expedienteId);
+    const expediente = expedientes.find(e => e.id === formData.expedienteId);
     
     const appointmentData: Omit<Appointment, 'id' | 'organizationId'> = {
       title: formData.title,
@@ -57,7 +72,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({ onSave, onClose, de
 
   const handleExpedienteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const expedienteId = e.target.value;
-    const expediente = mockExpedientes.find(exp => exp.id === expedienteId);
+    const expediente = expedientes.find(exp => exp.id === expedienteId);
     
     setFormData(prev => ({
       ...prev,
@@ -138,7 +153,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({ onSave, onClose, de
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Seleccionar expediente</option>
-              {mockExpedientes.map(expediente => (
+              {expedientes.map(expediente => (
                 <option key={expediente.id} value={expediente.id}>
                   {expediente.title} - {expediente.clientName}
                 </option>

@@ -1,50 +1,88 @@
 import React, { useState } from 'react';
+import { useEffect } from 'react';
 import { Plus, Calendar, User } from 'lucide-react';
 import { Expediente } from '../../types';
-import { mockExpedientes } from '../../data/mockData';
+import { expedientesAPI } from '../../services/api';
 import ExpedienteModal from './ExpedienteModal';
 
 const KanbanBoard: React.FC = () => {
-  const [expedientes, setExpedientes] = useState<Expediente[]>(mockExpedientes);
+  const [expedientes, setExpedientes] = useState<Expediente[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedExpediente, setSelectedExpediente] = useState<Expediente | null>(null);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    fetchExpedientes();
+  }, []);
+
+  const fetchExpedientes = async () => {
+    try {
+      const response = await expedientesAPI.getAll();
+      setExpedientes(response.data);
+    } catch (error) {
+      console.error('Error fetching expedientes:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   const statusColumns = [
     { status: 'Activo' as const, title: 'Activos', color: 'bg-green-100 text-green-800' },
     { status: 'Pendiente' as const, title: 'Pendientes', color: 'bg-yellow-100 text-yellow-800' },
     { status: 'Cerrado' as const, title: 'Cerrados', color: 'bg-gray-100 text-gray-800' }
   ];
 
-  const handleAddExpediente = (expedienteData: Omit<Expediente, 'id' | 'organizationId' | 'createdAt'>) => {
-    const newExpediente: Expediente = {
-      ...expedienteData,
-      id: Date.now().toString(),
-      organizationId: '1',
-      createdAt: new Date()
-    };
-    setExpedientes([...expedientes, newExpediente]);
-    setShowModal(false);
-    setSelectedExpediente(null);
+  const handleAddExpediente = async (expedienteData: Omit<Expediente, 'id' | 'organizationId' | 'createdAt'>) => {
+    try {
+      const response = await expedientesAPI.create(expedienteData);
+      setExpedientes([response.data, ...expedientes]);
+      setShowModal(false);
+      setSelectedExpediente(null);
+    } catch (error) {
+      console.error('Error creating expediente:', error);
+      alert('Error al crear expediente');
+    }
   };
 
   const handleDragStart = (e: React.DragEvent, expediente: Expediente) => {
     e.dataTransfer.setData('text/plain', expediente.id);
   };
 
-  const handleDrop = (e: React.DragEvent, newStatus: Expediente['status']) => {
+  const handleDrop = async (e: React.DragEvent, newStatus: Expediente['status']) => {
     e.preventDefault();
     const expedienteId = e.dataTransfer.getData('text/plain');
     
-    setExpedientes(expedientes.map(exp => 
-      exp.id === expedienteId 
-        ? { ...exp, status: newStatus }
-        : exp
-    ));
+    try {
+      const expediente = expedientes.find(exp => exp.id === expedienteId);
+      if (expediente) {
+        await expedientesAPI.update(expedienteId, { ...expediente, status: newStatus });
+        setExpedientes(expedientes.map(exp => 
+          exp.id === expedienteId 
+            ? { ...exp, status: newStatus }
+            : exp
+        ));
+      }
+    } catch (error) {
+      console.error('Error updating expediente status:', error);
+      alert('Error al actualizar estado del expediente');
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
   };
+
+  if (loading) {
+    return (
+      <div className="p-6 bg-gray-50 min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-12">
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Cargando expedientes...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -99,11 +137,11 @@ const KanbanBoard: React.FC = () => {
                       <div className="flex items-center justify-between text-xs text-gray-500">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
-                          <span>{expediente.createdAt.toLocaleDateString('es-ES')}</span>
+                          <span>{new Date(expediente.createdAt).toLocaleDateString('es-ES')}</span>
                         </div>
                         {expediente.dueDate && (
                           <div className="text-yellow-600 font-medium">
-                            Vence: {expediente.dueDate.toLocaleDateString('es-ES')}
+                            Vence: {new Date(expediente.dueDate).toLocaleDateString('es-ES')}
                           </div>
                         )}
                       </div>

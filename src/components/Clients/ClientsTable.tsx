@@ -1,30 +1,48 @@
 import React, { useState } from 'react';
+import { useEffect } from 'react';
 import { Plus, Mail, Phone, Eye, Edit, Trash2 } from 'lucide-react';
 import { Client } from '../../types';
-import { mockClients } from '../../data/mockData';
+import { clientsAPI } from '../../services/api';
 import ClientModal from './ClientModal';
 
 const ClientsTable: React.FC = () => {
-  const [clients, setClients] = useState<Client[]>(mockClients);
+  const [clients, setClients] = useState<Client[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    fetchClients();
+  }, []);
+
+  const fetchClients = async () => {
+    try {
+      const response = await clientsAPI.getAll();
+      setClients(response.data);
+    } catch (error) {
+      console.error('Error fetching clients:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   const filteredClients = clients.filter(client =>
     client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleAddClient = (clientData: Omit<Client, 'id' | 'organizationId' | 'createdAt'>) => {
-    const newClient: Client = {
-      ...clientData,
-      id: Date.now().toString(),
-      organizationId: '1',
-      createdAt: new Date()
+    const handleAddClient = async (clientData: Omit<Client, 'id' | 'organizationId' | 'createdAt'>) => {
+      try {
+        const response = await clientsAPI.create(clientData);
+        setClients([response.data, ...clients]);
+        setShowModal(false);
+        setSelectedClient(null);
+      } catch (error) {
+        console.error('Error creating client:', error);
+        alert('Error al crear cliente');
+      }
     };
-    setClients([...clients, newClient]);
-    setShowModal(false);
-    setSelectedClient(null);
   };
 
   const handleEditClient = (client: Client) => {
@@ -32,23 +50,46 @@ const ClientsTable: React.FC = () => {
     setShowModal(true);
   };
 
-  const handleUpdateClient = (clientData: Omit<Client, 'id' | 'organizationId' | 'createdAt'>) => {
-    if (selectedClient) {
+  const handleUpdateClient = async (clientData: Omit<Client, 'id' | 'organizationId' | 'createdAt'>) => {
+    if (!selectedClient) return;
+    
+    try {
+      const response = await clientsAPI.update(selectedClient.id, clientData);
       setClients(clients.map(c => 
-        c.id === selectedClient.id 
-          ? { ...selectedClient, ...clientData }
-          : c
+        c.id === selectedClient.id ? response.data : c
       ));
       setShowModal(false);
       setSelectedClient(null);
+    } catch (error) {
+      console.error('Error updating client:', error);
+      alert('Error al actualizar cliente');
     }
   };
 
-  const handleDeleteClient = (clientId: string) => {
+  const handleDeleteClient = async (clientId: string) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este cliente?')) {
-      setClients(clients.filter(c => c.id !== clientId));
+      try {
+        await clientsAPI.delete(clientId);
+        setClients(clients.filter(c => c.id !== clientId));
+      } catch (error) {
+        console.error('Error deleting client:', error);
+        alert('Error al eliminar cliente');
+      }
     }
   };
+
+  if (loading) {
+    return (
+      <div className="p-6 bg-gray-50 min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-12">
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Cargando clientes...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -137,7 +178,7 @@ const ClientsTable: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {client.createdAt.toLocaleDateString('es-ES')}
+                      {new Date(client.createdAt).toLocaleDateString('es-ES')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">

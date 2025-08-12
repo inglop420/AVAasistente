@@ -1,14 +1,30 @@
 import React, { useState, useCallback } from 'react';
+import { useEffect } from 'react';
 import { Upload, FileText, Download, Eye, Trash2, Search, Filter } from 'lucide-react';
 import { Document } from '../../types';
-import { mockDocuments } from '../../data/mockData';
+import { documentsAPI } from '../../services/api';
 
 const DocumentGallery: React.FC = () => {
-  const [documents, setDocuments] = useState<Document[]>(mockDocuments);
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [isDragging, setIsDragging] = useState(false);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
+
+  const fetchDocuments = async () => {
+    try {
+      const response = await documentsAPI.getAll();
+      setDocuments(response.data);
+    } catch (error) {
+      console.error('Error fetching documents:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   const filteredDocuments = documents.filter(doc => {
     const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFilter = filterType === 'all' || doc.type.toLowerCase() === filterType.toLowerCase();
@@ -35,17 +51,23 @@ const DocumentGallery: React.FC = () => {
     handleFileUpload(files);
   }, []);
 
-  const handleFileUpload = (files: File[]) => {
-    const newDocuments: Document[] = files.map(file => ({
-      id: Date.now().toString() + Math.random().toString(),
-      name: file.name,
-      type: file.type.split('/')[1]?.toUpperCase() || 'FILE',
-      url: URL.createObjectURL(file),
-      uploadedAt: new Date(),
-      organizationId: '1'
-    }));
-
-    setDocuments(prev => [...newDocuments, ...prev]);
+  const handleFileUpload = async (files: File[]) => {
+    for (const file of files) {
+      try {
+        const documentData = {
+          name: file.name,
+          type: file.type.split('/')[1]?.toUpperCase() || 'FILE',
+          url: URL.createObjectURL(file), // In production, upload to cloud storage
+          size: file.size
+        };
+        
+        const response = await documentsAPI.create(documentData);
+        setDocuments(prev => [response.data, ...prev]);
+      } catch (error) {
+        console.error('Error uploading document:', error);
+        alert(`Error al subir ${file.name}`);
+      }
+    }
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,9 +77,15 @@ const DocumentGallery: React.FC = () => {
     }
   };
 
-  const handleDeleteDocument = (docId: string) => {
+  const handleDeleteDocument = async (docId: string) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este documento?')) {
-      setDocuments(documents.filter(doc => doc.id !== docId));
+      try {
+        await documentsAPI.delete(docId);
+        setDocuments(documents.filter(doc => doc.id !== docId));
+      } catch (error) {
+        console.error('Error deleting document:', error);
+        alert('Error al eliminar documento');
+      }
     }
   };
 
@@ -77,6 +105,19 @@ const DocumentGallery: React.FC = () => {
         return '📁';
     }
   };
+
+  if (loading) {
+    return (
+      <div className="p-6 bg-gray-50 min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-12">
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Cargando documentos...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -171,7 +212,7 @@ const DocumentGallery: React.FC = () => {
                 </h3>
                 
                 <p className="text-xs text-gray-500 mb-4">
-                  {document.uploadedAt.toLocaleDateString('es-ES')}
+                  {new Date(document.uploadedAt || document.createdAt).toLocaleDateString('es-ES')}
                 </p>
 
                 <div className="flex items-center justify-center gap-2">

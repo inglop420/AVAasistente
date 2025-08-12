@@ -1,14 +1,30 @@
 import React, { useState } from 'react';
+import { useEffect } from 'react';
 import { Search, Filter, Book, Eye, Star } from 'lucide-react';
 import { LibraryItem } from '../../types';
-import { mockLibraryItems } from '../../data/mockData';
+import { libraryAPI } from '../../services/api';
 
 const LibraryView: React.FC = () => {
-  const [libraryItems] = useState<LibraryItem[]>(mockLibraryItems);
+  const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedItem, setSelectedItem] = useState<LibraryItem | null>(null);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    fetchLibraryItems();
+  }, []);
+
+  const fetchLibraryItems = async () => {
+    try {
+      const response = await libraryAPI.getAll();
+      setLibraryItems(response.data);
+    } catch (error) {
+      console.error('Error fetching library items:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   const categories = ['all', ...Array.from(new Set(libraryItems.map(item => item.category)))];
 
   const filteredItems = libraryItems.filter(item => {
@@ -28,6 +44,19 @@ const LibraryView: React.FC = () => {
     };
     return colors[category] || 'bg-gray-100 text-gray-800';
   };
+
+  if (loading) {
+    return (
+      <div className="p-6 bg-gray-50 min-h-screen">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center py-12">
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Cargando biblioteca...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
