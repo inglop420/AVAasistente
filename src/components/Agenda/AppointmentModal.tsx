@@ -48,7 +48,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({ onSave, onClose, de
     e.preventDefault();
     
     const appointmentDateTime = new Date(`${formData.date}T${formData.time}`);
-    const expediente = expedientes.find(e => e.id === formData.expedienteId);
+    const expediente = expedientes.find(e => e._id === formData.expedienteId);
     
     const appointmentData: Omit<Appointment, 'id' | 'organizationId'> = {
       title: formData.title,
@@ -72,7 +72,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({ onSave, onClose, de
 
   const handleExpedienteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const expedienteId = e.target.value;
-    const expediente = expedientes.find(exp => exp.id === expedienteId);
+    const expediente = expedientes.find(exp => exp._id === expedienteId);
     
     setFormData(prev => ({
       ...prev,
@@ -154,7 +154,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({ onSave, onClose, de
             >
               <option value="">Seleccionar expediente</option>
               {expedientes.map(expediente => (
-                <option key={expediente.id} value={expediente.id}>
+                <option key={expediente._id} value={expediente._id}>
                   {expediente.title} - {expediente.clientName}
                 </option>
               ))}

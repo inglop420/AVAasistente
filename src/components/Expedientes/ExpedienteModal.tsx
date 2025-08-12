@@ -48,7 +48,7 @@ const ExpedienteModal: React.FC<ExpedienteModalProps> = ({ expediente, onSave, o
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    const client = clients.find(c => c.id === formData.clientId);
+    const client = clients.find(c => c._id === formData.clientId);
     const expedienteData = {
       ...formData,
       clientName: client?.name || formData.clientName,
@@ -68,7 +68,7 @@ const ExpedienteModal: React.FC<ExpedienteModalProps> = ({ expediente, onSave, o
 
   const handleClientChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const clientId = e.target.value;
-    const client = clients.find(c => c.id === clientId);
+    const client = clients.find(c => c._id === clientId);
     
     setFormData(prev => ({
       ...prev,
@@ -121,7 +121,7 @@ const ExpedienteModal: React.FC<ExpedienteModalProps> = ({ expediente, onSave, o
             >
               <option value="">Seleccionar cliente</option>
               {clients.map(client => (
-                <option key={client.id} value={client.id}>
+                <option key={client._id} value={client._id}>
                   {client.name}
                 </option>
               ))}
