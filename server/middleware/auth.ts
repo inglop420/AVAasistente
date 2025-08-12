@@ -28,9 +28,9 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
     }
 
     req.user = {
-      id: user._id.toString(),
-      tenantId: user.tenantId,
-      role: user.role
+      id: (user as any)._id.toString(),
+      tenantId: (user as any).tenantId,
+      role: (user as any).role
     };
 
     next();

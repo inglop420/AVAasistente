@@ -31,8 +31,7 @@ const ClientsTable: React.FC = () => {
     client.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAddClient = (clientData: Omit<Client, 'id' | 'organizationId' | 'createdAt'>) => {
-    const handleAddClient = async (clientData: Omit<Client, 'id' | 'organizationId' | 'createdAt'>) => {
+  const handleAddClient = async (clientData: Omit<Client, 'id' | 'organizationId' | 'createdAt'>) => {
       try {
         const response = await clientsAPI.create(clientData);
         setClients([response.data, ...clients]);
@@ -43,7 +42,7 @@ const ClientsTable: React.FC = () => {
         alert('Error al crear cliente');
       }
     };
-  };
+  
 
   const handleEditClient = (client: Client) => {
     setSelectedClient(client);
