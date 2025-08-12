@@ -6,7 +6,20 @@ import { AuthRequest } from '../middleware/auth';
 export const getExpedientes = async (req: AuthRequest, res: Response) => {
   try {
     const expedientes = await Expediente.find({ tenantId: req.user!.tenantId }).sort({ createdAt: -1 });
-    res.json(expedientes);
+    
+    // Transform expedientes to match frontend interface
+    const expedientesResponse = expedientes.map(exp => ({
+      id: exp._id.toString(),
+      title: exp.title,
+      clientId: exp.clientId,
+      clientName: exp.clientName,
+      status: exp.status,
+      organizationId: exp.tenantId,
+      createdAt: exp.createdAt,
+      dueDate: exp.dueDate
+    }));
+    
+    res.json(expedientesResponse);
   } catch (error) {
     console.error('Get expedientes error:', error);
     res.status(500).json({ message: 'Error al obtener expedientes' });
@@ -19,7 +32,7 @@ export const createExpediente = async (req: AuthRequest, res: Response) => {
 
     // Verify client exists and belongs to tenant
     const client = await Client.findOne({ 
-      _id: clientId, 
+      _id: clientId,
       tenantId: req.user!.tenantId 
     });
     
@@ -39,11 +52,26 @@ export const createExpediente = async (req: AuthRequest, res: Response) => {
     await expediente.save();
 
     // Update client's expedientes count
-    await Client.findByIdAndUpdate(clientId, {
+    await Client.findOneAndUpdate(
+      { _id: clientId, tenantId: req.user!.tenantId },
+      {
       $inc: { expedientesCount: 1 }
-    });
+      }
+    );
 
-    res.status(201).json(expediente);
+    // Return expediente with proper id field
+    const expedienteResponse = {
+      id: expediente._id.toString(),
+      title: expediente.title,
+      clientId: expediente.clientId,
+      clientName: expediente.clientName,
+      status: expediente.status,
+      organizationId: expediente.tenantId,
+      createdAt: expediente.createdAt,
+      dueDate: expediente.dueDate
+    };
+
+    res.status(201).json(expedienteResponse);
   } catch (error) {
     console.error('Create expediente error:', error);
     res.status(500).json({ message: 'Error al crear expediente' });
@@ -69,7 +97,19 @@ export const updateExpediente = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ message: 'Expediente no encontrado' });
     }
 
-    res.json(expediente);
+    // Return expediente with proper id field
+    const expedienteResponse = {
+      id: expediente._id.toString(),
+      title: expediente.title,
+      clientId: expediente.clientId,
+      clientName: expediente.clientName,
+      status: expediente.status,
+      organizationId: expediente.tenantId,
+      createdAt: expediente.createdAt,
+      dueDate: expediente.dueDate
+    };
+
+    res.json(expedienteResponse);
   } catch (error) {
     console.error('Update expediente error:', error);
     res.status(500).json({ message: 'Error al actualizar expediente' });
@@ -90,9 +130,12 @@ export const deleteExpediente = async (req: AuthRequest, res: Response) => {
     }
 
     // Update client's expedientes count
-    await Client.findByIdAndUpdate(expediente.clientId, {
+    await Client.findOneAndUpdate(
+      { _id: expediente.clientId, tenantId: req.user!.tenantId },
+      {
       $inc: { expedientesCount: -1 }
-    });
+      }
+    );
 
     res.json({ message: 'Expediente eliminado exitosamente' });
   } catch (error) {
