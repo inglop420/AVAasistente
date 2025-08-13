@@ -9,7 +9,7 @@ export const getExpedientes = async (req: AuthRequest, res: Response) => {
     
     // Transform expedientes to match frontend interface
     const expedientesResponse = expedientes.map(exp => ({
-      id: exp._id.toString(),
+      id: (exp as any)._id.toString(),
       title: exp.title,
       clientId: exp.clientId,
       clientName: exp.clientName,
@@ -61,7 +61,7 @@ export const createExpediente = async (req: AuthRequest, res: Response) => {
 
     // Return expediente with proper id field
     const expedienteResponse = {
-      id: expediente._id.toString(),
+      id: (expediente as any)._id.toString(),
       title: expediente.title,
       clientId: expediente.clientId,
       clientName: expediente.clientName,
@@ -99,7 +99,7 @@ export const updateExpediente = async (req: AuthRequest, res: Response) => {
 
     // Return expediente with proper id field
     const expedienteResponse = {
-      id: expediente._id.toString(),
+      id: (expediente as any) ._id.toString(),
       title: expediente.title,
       clientId: expediente.clientId,
       clientName: expediente.clientName,
