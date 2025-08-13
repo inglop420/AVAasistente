@@ -13,7 +13,6 @@ const ClientsTable: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const permissions = usePermissions();
-  const permissions = usePermissions();
 
   useEffect(() => {
     fetchClients();
