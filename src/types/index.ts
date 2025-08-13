@@ -131,6 +131,7 @@ const KanbanBoard: React.FC = () => {
                       onDragStart={(e) => handleDragStart(e, expediente)}
                       className={`bg-gray-50 p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200 ${
                         permissions.expedientes.update ? 'cursor-move' : 'cursor-default'
+                      }
                     >
                       <h3 className="font-medium text-gray-900 mb-2">{expediente.title}</h3>
                       
@@ -180,3 +181,9 @@ const KanbanBoard: React.FC = () => {
 };
 
 export default KanbanBoard;
+                }
+          )
+          )
+          }
+  )
+}
