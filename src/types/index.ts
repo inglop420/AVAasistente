@@ -3,9 +3,11 @@ export interface User {
   id: string;
   name: string;
   email: string;
-  role: 'Admin' | 'Abogado' | 'Asistente';
+  role: 'superadmin' | 'admin' | 'user';
   organizationId: string;
   avatar?: string;
+  organizationName?: string;
+  createdAt?: Date;
 }
 
 export interface Organization {
@@ -77,4 +79,5 @@ export type NavigationItem =
   | 'agenda'
   | 'documentos'
   | 'biblioteca'
-  | 'configuracion';
+  | 'configuracion'
+  | 'admin';

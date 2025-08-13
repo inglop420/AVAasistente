@@ -11,6 +11,7 @@ import CalendarView from './components/Agenda/CalendarView';
 import DocumentGallery from './components/Documents/DocumentGallery';
 import LibraryView from './components/Library/LibraryView';
 import SettingsView from './components/Settings/SettingsView';
+import AdminPanel from './components/Admin/AdminPanel';
 import FloatingAssistant from './components/FloatingAssistant';
 
 const MainApp: React.FC = () => {
@@ -49,6 +50,8 @@ const MainApp: React.FC = () => {
         return <LibraryView />;
       case 'configuracion':
         return <SettingsView />;
+      case 'admin':
+        return <AdminPanel />;
       default:
         return <Dashboard />;
     }

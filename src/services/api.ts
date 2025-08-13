@@ -77,4 +77,19 @@ export const libraryAPI = {
   create: (itemData: any) => api.post('/library', itemData),
 };
 
+// Admin API
+export const adminAPI = {
+  // Organizations
+  getOrganizations: () => api.get('/admin/organizations'),
+  createOrganization: (orgData: any) => api.post('/admin/organizations', orgData),
+  updateOrganization: (id: string, orgData: any) => api.put(`/admin/organizations/${id}`, orgData),
+  deleteOrganization: (id: string) => api.delete(`/admin/organizations/${id}`),
+  
+  // Users
+  getUsers: () => api.get('/admin/users'),
+  createUser: (userData: any) => api.post('/admin/users', userData),
+  updateUser: (id: string, userData: any) => api.put(`/admin/users/${id}`, userData),
+  deleteUser: (id: string) => api.delete(`/admin/users/${id}`),
+};
+
 export default api;
