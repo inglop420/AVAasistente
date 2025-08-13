@@ -89,9 +89,9 @@ const LoginForm: React.FC = () => {
         <div className="mt-6 p-4 bg-gray-50 rounded-lg">
           <p className="text-sm text-gray-600 font-medium mb-2">Credenciales de demo:</p>
           <div className="space-y-1 text-xs text-gray-500">
-            <p><span className="font-medium">Admin:</span> maria@bufeteava.com</p>
-            <p><span className="font-medium">Abogado:</span> carlos@bufeteava.com</p>
-            <p><span className="font-medium">Asistente:</span> ana@bufeteava.com</p>
+            <p><span className="font-medium">Administrador:</span> maria@bufeteava.com</p>
+            <p><span className="font-medium">Usuario:</span> carlos@bufeteava.com</p>
+            <p><span className="font-medium">Usuario:</span> ana@bufeteava.com</p>
             <p><span className="font-medium">Contraseña:</span> demo123</p>
           </div>
         </div>

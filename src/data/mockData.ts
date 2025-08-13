@@ -10,21 +10,21 @@ export const mockUsers: User[] = [
     id: '1',
     name: 'María González',
     email: 'maria@bufeteava.com',
-    role: 'Admin',
+    role: 'admin',
     organizationId: '1'
   },
   {
     id: '2',
     name: 'Carlos Ruiz',
     email: 'carlos@bufeteava.com',
-    role: 'Abogado',
+    role: 'user',
     organizationId: '1'
   },
   {
     id: '3',
     name: 'Ana López',
     email: 'ana@bufeteava.com',
-    role: 'Asistente',
+    role: 'user',
     organizationId: '1'
   }
 ];

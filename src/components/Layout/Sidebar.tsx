@@ -29,6 +29,9 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isCollapse
     { id: 'agenda' as NavigationItem, label: 'Agenda', icon: Calendar },
     { id: 'documentos' as NavigationItem, label: 'Documentos', icon: FileText },
     { id: 'biblioteca' as NavigationItem, label: 'Biblioteca', icon: BookOpen },
+    ...(user && ['admin', 'superadmin'].includes(user.role) ? [
+      { id: 'admin' as NavigationItem, label: 'Administración', icon: Settings }
+    ] : []),
     { id: 'configuracion' as NavigationItem, label: 'Configuración', icon: Settings },
   ];
 
