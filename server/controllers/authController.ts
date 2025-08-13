@@ -6,7 +6,7 @@ import User from '../models/User';
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { name, email, password, role = 'Asistente', organizationName } = req.body;
+    const { name, email, password, role = 'user', organizationId } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -18,23 +18,20 @@ export const register = async (req: Request, res: Response) => {
     const saltRounds = 12;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Generate tenant ID
-    const tenantId = uuidv4();
-
     // Create user
     const user = new User({
       name,
       email,
       password: hashedPassword,
       role,
-      tenantId
+      organizationId: organizationId || uuidv4() // Generate new org if not provided
     });
 
     await user.save();
 
     // Generate JWT
     const token = jwt.sign(
-      { id: user._id, tenantId: user.tenantId },
+      { id: user._id, organizationId: user.organizationId },
       process.env.JWT_SECRET!,
       { expiresIn: '7d' }
     );
@@ -47,7 +44,7 @@ export const register = async (req: Request, res: Response) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        organizationId: user.tenantId
+        organizationId: user.organizationId
       }
     });
   } catch (error) {
@@ -74,7 +71,7 @@ export const login = async (req: Request, res: Response) => {
 
     // Generate JWT
     const token = jwt.sign(
-      { id: user._id, tenantId: user.tenantId },
+      { id: user._id, organizationId: user.organizationId },
       process.env.JWT_SECRET!,
       { expiresIn: '7d' }
     );
@@ -87,7 +84,7 @@ export const login = async (req: Request, res: Response) => {
         name: user.name,
         email: user.email,
         role: user.role,
-        organizationId: user.tenantId
+        organizationId: user.organizationId
       }
     });
   } catch (error) {

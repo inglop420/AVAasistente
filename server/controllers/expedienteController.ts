@@ -5,7 +5,7 @@ import { AuthRequest } from '../middleware/auth';
 
 export const getExpedientes = async (req: AuthRequest, res: Response) => {
   try {
-    const expedientes = await Expediente.find({ tenantId: req.user!.tenantId }).sort({ createdAt: -1 });
+    const expedientes = await Expediente.find({ tenantId: req.user!.organizationId }).sort({ createdAt: -1 });
     
     // Transform expedientes to match frontend interface
     const expedientesResponse = expedientes.map(exp => ({
@@ -33,7 +33,7 @@ export const createExpediente = async (req: AuthRequest, res: Response) => {
     // Verify client exists and belongs to tenant
     const client = await Client.findOne({ 
       _id: clientId,
-      tenantId: req.user!.tenantId 
+      tenantId: req.user!.organizationId 
     });
     
     if (!client) {
@@ -45,7 +45,7 @@ export const createExpediente = async (req: AuthRequest, res: Response) => {
       clientId,
       clientName: client.name,
       status: status || 'Activo',
-      tenantId: req.user!.tenantId,
+      tenantId: req.user!.organizationId,
       dueDate: dueDate ? new Date(dueDate) : undefined
     });
 
@@ -53,7 +53,7 @@ export const createExpediente = async (req: AuthRequest, res: Response) => {
 
     // Update client's expedientes count
     await Client.findOneAndUpdate(
-      { _id: clientId, tenantId: req.user!.tenantId },
+      { _id: clientId, tenantId: req.user!.organizationId },
       {
       $inc: { expedientesCount: 1 }
       }
@@ -84,7 +84,7 @@ export const updateExpediente = async (req: AuthRequest, res: Response) => {
     const { title, status, dueDate } = req.body;
 
     const expediente = await Expediente.findOneAndUpdate(
-      { _id: id, tenantId: req.user!.tenantId },
+      { _id: id, tenantId: req.user!.organizationId },
       { 
         title, 
         status, 
@@ -122,7 +122,7 @@ export const deleteExpediente = async (req: AuthRequest, res: Response) => {
 
     const expediente = await Expediente.findOneAndDelete({
       _id: id,
-      tenantId: req.user!.tenantId
+      tenantId: req.user!.organizationId
     });
 
     if (!expediente) {
@@ -131,7 +131,7 @@ export const deleteExpediente = async (req: AuthRequest, res: Response) => {
 
     // Update client's expedientes count
     await Client.findOneAndUpdate(
-      { _id: expediente.clientId, tenantId: req.user!.tenantId },
+      { _id: expediente.clientId, tenantId: req.user!.organizationId },
       {
       $inc: { expedientesCount: -1 }
       }

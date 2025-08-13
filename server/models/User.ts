@@ -4,8 +4,8 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
-  role: 'Admin' | 'Abogado' | 'Asistente';
-  tenantId: string;
+  role: 'superadmin' | 'admin' | 'user';
+  organizationId: string;
   avatar?: string;
   createdAt: Date;
 }
@@ -30,10 +30,10 @@ const UserSchema = new Schema<IUser>({
   },
   role: {
     type: String,
-    enum: ['Admin', 'Abogado', 'Asistente'],
-    default: 'Asistente'
+    enum: ['superadmin', 'admin', 'user'],
+    default: 'user'
   },
-  tenantId: {
+  organizationId: {
     type: String,
     required: true,
     index: true
@@ -46,6 +46,6 @@ const UserSchema = new Schema<IUser>({
 });
 
 // Compound index for tenant isolation
-UserSchema.index({ tenantId: 1, email: 1 }, { unique: true });
+UserSchema.index({ organizationId: 1, email: 1 }, { unique: true });
 
 export default mongoose.model<IUser>('User', UserSchema);

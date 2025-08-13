@@ -5,7 +5,7 @@ import User from '../models/User';
 export interface AuthRequest extends Request {
   user?: {
     id: string;
-    tenantId: string;
+    organizationId: string;
     role: string;
   };
 }
@@ -29,7 +29,7 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
 
     req.user = {
       id: (user as any)._id.toString(),
-      tenantId: (user as any).tenantId,
+      organizationId: (user as any).organizationId,
       role: (user as any).role
     };
 
@@ -37,4 +37,18 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
   } catch (error) {
     return res.status(403).json({ message: 'Token inválido' });
   }
+};
+
+export const requireRole = (roles: string[]) => {
+  return (req: AuthRequest, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({ message: 'No autenticado' });
+    }
+
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({ message: 'No tienes permisos para esta acción' });
+    }
+
+    next();
+  };
 };
