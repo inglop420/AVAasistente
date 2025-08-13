@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { Upload, FileText, Download, Eye, Trash2, Search, Filter } from 'lucide-react';
 import { Document } from '../../types';
 import { documentsAPI } from '../../services/api';
+import { usePermissions } from '../../hooks/usePermissions';
 
 const DocumentGallery: React.FC = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -10,6 +11,7 @@ const DocumentGallery: React.FC = () => {
   const [filterType, setFilterType] = useState('all');
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(true);
+  const permissions = usePermissions();
 
   useEffect(() => {
     fetchDocuments();
@@ -128,17 +130,19 @@ const DocumentGallery: React.FC = () => {
             <p className="text-gray-600 mt-1">Gestiona tus archivos y documentos</p>
           </div>
           
-          <label className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2 cursor-pointer">
-            <Upload className="w-4 h-4" />
-            Subir Documento
-            <input
-              type="file"
-              multiple
-              onChange={handleFileInputChange}
-              className="hidden"
-              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif"
-            />
-          </label>
+          {permissions.documents.create && (
+            <label className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2 cursor-pointer">
+              <Upload className="w-4 h-4" />
+              Subir Documento
+              <input
+                type="file"
+                multiple
+                onChange={handleFileInputChange}
+                className="hidden"
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif"
+              />
+            </label>
+          )}
         </div>
 
         {/* Search and Filter */}
@@ -171,29 +175,31 @@ const DocumentGallery: React.FC = () => {
         </div>
 
         {/* Drag and Drop Zone */}
-        <div
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          className={`border-2 border-dashed rounded-lg p-8 mb-8 text-center transition-colors duration-200 ${
-            isDragging 
-              ? 'border-blue-500 bg-blue-50' 
-              : 'border-gray-300 bg-white hover:border-gray-400'
-          }`}
-        >
-          <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600 mb-2">Arrastra archivos aquí o</p>
-          <label className="text-blue-600 hover:text-blue-700 cursor-pointer font-medium">
-            selecciona archivos
-            <input
-              type="file"
-              multiple
-              onChange={handleFileInputChange}
-              className="hidden"
-              accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif"
-            />
-          </label>
-        </div>
+        {permissions.documents.create && (
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={`border-2 border-dashed rounded-lg p-8 mb-8 text-center transition-colors duration-200 ${
+              isDragging 
+                ? 'border-blue-500 bg-blue-50' 
+                : 'border-gray-300 bg-white hover:border-gray-400'
+            }`}
+          >
+            <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-600 mb-2">Arrastra archivos aquí o</p>
+            <label className="text-blue-600 hover:text-blue-700 cursor-pointer font-medium">
+              selecciona archivos
+              <input
+                type="file"
+                multiple
+                onChange={handleFileInputChange}
+                className="hidden"
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif"
+              />
+            </label>
+          </div>
+        )}
 
         {/* Document Grid */}
         {filteredDocuments.length > 0 ? (
@@ -228,13 +234,15 @@ const DocumentGallery: React.FC = () => {
                   >
                     <Download className="w-4 h-4" />
                   </button>
-                  <button
-                    onClick={() => handleDeleteDocument(document.id)}
-                    className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
-                    title="Eliminar"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {permissions.documents.delete && (
+                    <button
+                      onClick={() => handleDeleteDocument(document.id)}
+                      className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                      title="Eliminar"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}

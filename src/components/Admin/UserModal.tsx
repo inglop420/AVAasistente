@@ -58,13 +58,20 @@ const UserModal: React.FC<UserModalProps> = ({
 
   const availableRoles = currentUserRole === 'superadmin' 
     ? [
-        { value: 'user', label: 'Usuario' },
-        { value: 'admin', label: 'Administrador' },
+        { value: 'auxiliar', label: 'Auxiliar' },
+        { value: 'asistente', label: 'Asistente' },
+        { value: 'abogado', label: 'Abogado' },
+        { value: 'asistente', label: 'Asistente' },
+        { value: 'abogado', label: 'Abogado' },
+        { value: 'admin', label: 'Administrador de Organización' },
         { value: 'superadmin', label: 'Super Administrador' }
       ]
     : [
-        { value: 'user', label: 'Usuario' },
-        { value: 'admin', label: 'Administrador' }
+        { value: 'auxiliar', label: 'Auxiliar' },
+        { value: 'asistente', label: 'Asistente' },
+        { value: 'abogado', label: 'Abogado' }
+        { value: 'asistente', label: 'Asistente' },
+        { value: 'abogado', label: 'Abogado' }
       ];
 
   return (

@@ -4,7 +4,11 @@ const UserSchema = new mongoose.Schema({
   name: String,
   email: String,
   password: String,
-  role: String,
+  role: {
+    type: String,
+    enum: ['superadmin', 'admin', 'abogado', 'asistente', 'auxiliar'],
+    default: 'auxiliar'
+  },
   organizationId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Organization'

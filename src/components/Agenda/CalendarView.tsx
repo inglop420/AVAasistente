@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Plus, Clock, User } from 'lucide-react';
 import { Appointment } from '../../types';
 import { appointmentsAPI } from '../../services/api';
 import AppointmentModal from './AppointmentModal';
+import { usePermissions } from '../../hooks/usePermissions';
 
 const CalendarView: React.FC = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -11,6 +12,7 @@ const CalendarView: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [loading, setLoading] = useState(true);
+  const permissions = usePermissions();
 
   useEffect(() => {
     fetchAppointments();
@@ -109,13 +111,15 @@ const CalendarView: React.FC = () => {
             <h1 className="text-3xl font-bold text-gray-900">Agenda</h1>
             <p className="text-gray-600 mt-1">Gestiona tus citas y eventos</p>
           </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Agendar Cita
-          </button>
+          {permissions.appointments.create && (
+            <button
+              onClick={() => setShowModal(true)}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Agendar Cita
+            </button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

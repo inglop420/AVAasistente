@@ -90,6 +90,12 @@ const UsersManager: React.FC = () => {
         return <Crown className="w-4 h-4 text-yellow-600" />;
       case 'admin':
         return <Shield className="w-4 h-4 text-blue-600" />;
+      case 'abogado':
+        return <User className="w-4 h-4 text-purple-600" />;
+      case 'asistente':
+        return <User className="w-4 h-4 text-green-600" />;
+      case 'auxiliar':
+        return <User className="w-4 h-4 text-gray-600" />;
       default:
         return <User className="w-4 h-4 text-gray-600" />;
     }
@@ -100,9 +106,15 @@ const UsersManager: React.FC = () => {
       case 'superadmin':
         return 'Super Admin';
       case 'admin':
-        return 'Administrador';
+        return 'Admin Organización';
+      case 'abogado':
+        return 'Abogado';
+      case 'asistente':
+        return 'Asistente';
+      case 'auxiliar':
+        return 'Auxiliar';
       default:
-        return 'Usuario';
+        return 'Auxiliar';
     }
   };
 
@@ -112,6 +124,12 @@ const UsersManager: React.FC = () => {
         return 'bg-yellow-100 text-yellow-800';
       case 'admin':
         return 'bg-blue-100 text-blue-800';
+      case 'abogado':
+        return 'bg-purple-100 text-purple-800';
+      case 'asistente':
+        return 'bg-green-100 text-green-800';
+      case 'auxiliar':
+        return 'bg-gray-100 text-gray-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }

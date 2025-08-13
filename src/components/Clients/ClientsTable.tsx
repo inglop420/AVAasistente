@@ -4,6 +4,8 @@ import { Plus, Mail, Phone, Eye, Edit, Trash2 } from 'lucide-react';
 import { Client } from '../../types';
 import { clientsAPI } from '../../services/api';
 import ClientModal from './ClientModal';
+import { usePermissions } from '../../hooks/usePermissions';
+import { usePermissions } from '../../hooks/usePermissions';
 
 const ClientsTable: React.FC = () => {
   const [clients, setClients] = useState<Client[]>([]);
@@ -11,6 +13,8 @@ const ClientsTable: React.FC = () => {
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
+  const permissions = usePermissions();
+  const permissions = usePermissions();
 
   useEffect(() => {
     fetchClients();
@@ -98,13 +102,17 @@ const ClientsTable: React.FC = () => {
             <h1 className="text-3xl font-bold text-gray-900">Clientes</h1>
             <p className="text-gray-600 mt-1">Gestiona la información de tus clientes</p>
           </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Nuevo Cliente
-          </button>
+          {permissions.clients.create && (
+            <button
+              onClick={() => setShowModal(true)}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Nuevo Cliente
+            </button>
+          )}
+            </button>
+          )}
         </div>
 
         {/* Search Bar */}
@@ -172,30 +180,38 @@ const ClientsTable: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {client.expedientesCount} expedientes
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {new Date(client.createdAt).toLocaleDateString('es-ES')}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center justify-end gap-2">
-                        <button className="text-blue-600 hover:text-blue-700 p-1 rounded transition-colors duration-200">
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button 
-                          onClick={() => handleEditClient(client)}
-                          className="text-gray-600 hover:text-gray-700 p-1 rounded transition-colors duration-200"
-                        >
-                          <Edit className="w-4 h-4" />
-                        </button>
-                        <button 
-                          onClick={() => handleDeleteClient(client.id)}
-                          className="text-red-600 hover:text-red-700 p-1 rounded transition-colors duration-200"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {permissions.clients.update && (
+                          <button 
+                            onClick={() => handleEditClient(client)}
+                            className="text-gray-600 hover:text-gray-700 p-1 rounded transition-colors duration-200"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                        )}
+                        {permissions.clients.delete && (
+                          <button 
+                            onClick={() => handleDeleteClient(client.id)}
+                            className="text-red-600 hover:text-red-700 p-1 rounded transition-colors duration-200"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                        {permissions.clients.update && (
+                          <button 
+                            onClick={() => handleEditClient(client)}
+                            className="text-gray-600 hover:text-gray-700 p-1 rounded transition-colors duration-200"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                        )}
+                        {permissions.clients.delete && (
+                          <button 
+                            onClick={() => handleDeleteClient(client.id)}
+                            className="text-red-600 hover:text-red-700 p-1 rounded transition-colors duration-200"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

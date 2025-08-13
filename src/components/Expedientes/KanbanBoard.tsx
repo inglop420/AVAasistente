@@ -4,12 +4,14 @@ import { Plus, Calendar, User } from 'lucide-react';
 import { Expediente } from '../../types';
 import { expedientesAPI } from '../../services/api';
 import ExpedienteModal from './ExpedienteModal';
+import { usePermissions } from '../../hooks/usePermissions';
 
 const KanbanBoard: React.FC = () => {
   const [expedientes, setExpedientes] = useState<Expediente[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedExpediente, setSelectedExpediente] = useState<Expediente | null>(null);
   const [loading, setLoading] = useState(true);
+  const permissions = usePermissions();
 
   useEffect(() => {
     fetchExpedientes();
@@ -49,6 +51,13 @@ const KanbanBoard: React.FC = () => {
 
   const handleDrop = async (e: React.DragEvent, newStatus: Expediente['status']) => {
     e.preventDefault();
+    
+    // Verificar permisos para actualizar expedientes
+    if (!permissions.expedientes.update) {
+      alert('No tienes permisos para actualizar expedientes');
+      return;
+    }
+    
     const expedienteId = e.dataTransfer.getData('text/plain');
     
     try {
@@ -92,13 +101,15 @@ const KanbanBoard: React.FC = () => {
             <h1 className="text-3xl font-bold text-gray-900">Expedientes</h1>
             <p className="text-gray-600 mt-1">Gestiona el estado de tus casos</p>
           </div>
-          <button
-            onClick={() => setShowModal(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Nuevo Expediente
-          </button>
+          {permissions.expedientes.create && (
+            <button
+              onClick={() => setShowModal(true)}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Nuevo Expediente
+            </button>
+          )}
         </div>
 
         {/* Kanban Board */}

@@ -55,3 +55,57 @@ export const requireRole = (roles: string[]) => {
   };
 };
 
+// Middleware para validar permisos específicos
+export const requirePermission = (action: string, resource: string) => {
+  return (req: AuthRequest, res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return res.status(401).json({ message: 'No autenticado' });
+    }
+
+    const { role } = req.user;
+
+    // Superadmin y admin tienen todos los permisos
+    if (role === 'superadmin' || role === 'admin') {
+      return next();
+    }
+
+    // Definir permisos por rol
+    const permissions = {
+      abogado: {
+        clients: ['create', 'read', 'update', 'delete'],
+        expedientes: ['create', 'read', 'update', 'delete'],
+        appointments: ['create', 'read', 'update', 'delete'],
+        documents: ['create', 'read', 'delete'],
+        library: ['read']
+      },
+      asistente: {
+        clients: ['create', 'read', 'update'],
+        expedientes: ['create', 'read', 'update'],
+        appointments: ['create', 'read', 'update', 'delete'],
+        documents: ['create', 'read', 'delete'],
+        library: ['read']
+      },
+      auxiliar: {
+        clients: ['read'],
+        expedientes: ['read'],
+        appointments: ['read'],
+        documents: ['read'],
+        library: ['read']
+      }
+    };
+
+    const userPermissions = permissions[role as keyof typeof permissions];
+    
+    if (!userPermissions || !userPermissions[resource as keyof typeof userPermissions]) {
+      return res.status(403).json({ message: 'No tienes permisos para acceder a este recurso' });
+    }
+
+    const resourcePermissions = userPermissions[resource as keyof typeof userPermissions];
+    
+    if (!resourcePermissions.includes(action)) {
+      return res.status(403).json({ message: `No tienes permisos para ${action} en ${resource}` });
+    }
+
+    next();
+  };
+};
