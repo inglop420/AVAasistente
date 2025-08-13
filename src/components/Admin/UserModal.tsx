@@ -61,15 +61,11 @@ const UserModal: React.FC<UserModalProps> = ({
         { value: 'auxiliar', label: 'Auxiliar' },
         { value: 'asistente', label: 'Asistente' },
         { value: 'abogado', label: 'Abogado' },
-        { value: 'asistente', label: 'Asistente' },
-        { value: 'abogado', label: 'Abogado' },
         { value: 'admin', label: 'Administrador de Organización' },
         { value: 'superadmin', label: 'Super Administrador' }
       ]
     : [
         { value: 'auxiliar', label: 'Auxiliar' },
-        { value: 'asistente', label: 'Asistente' },
-        { value: 'abogado', label: 'Abogado' }
         { value: 'asistente', label: 'Asistente' },
         { value: 'abogado', label: 'Abogado' }
       ];
