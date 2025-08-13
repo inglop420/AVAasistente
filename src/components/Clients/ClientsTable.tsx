@@ -5,7 +5,6 @@ import { Client } from '../../types';
 import { clientsAPI } from '../../services/api';
 import ClientModal from './ClientModal';
 import { usePermissions } from '../../hooks/usePermissions';
-import { usePermissions } from '../../hooks/usePermissions';
 
 const ClientsTable: React.FC = () => {
   const [clients, setClients] = useState<Client[]>([]);
