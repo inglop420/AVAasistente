@@ -176,39 +176,32 @@ const ClientsTable: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                        {permissions.clients.update && (
-                          <button 
-                            onClick={() => handleEditClient(client)}
-                            className="text-gray-600 hover:text-gray-700 p-1 rounded transition-colors duration-200"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                        )}
-                        {permissions.clients.delete && (
-                          <button 
-                            onClick={() => handleDeleteClient(client.id)}
-                            className="text-red-600 hover:text-red-700 p-1 rounded transition-colors duration-200"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                        {permissions.clients.update && (
-                          <button 
-                            onClick={() => handleEditClient(client)}
-                            className="text-gray-600 hover:text-gray-700 p-1 rounded transition-colors duration-200"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </button>
-                        )}
-                        {permissions.clients.delete && (
-                          <button 
-                            onClick={() => handleDeleteClient(client.id)}
-                            className="text-red-600 hover:text-red-700 p-1 rounded transition-colors duration-200"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
+                       <span className="text-sm text-gray-900">{client.expedientesCount || 0}</span>
+                     </td>
+                     <td className="px-6 py-4 whitespace-nowrap">
+                       <span className="text-sm text-gray-900">
+                         {new Date(client.createdAt).toLocaleDateString('es-ES')}
+                       </span>
+                     </td>
+                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                       <div className="flex items-center justify-end space-x-2">
+                         {permissions.clients.update && (
+                           <button 
+                             onClick={() => handleEditClient(client)}
+                             className="text-gray-600 hover:text-gray-700 p-1 rounded transition-colors duration-200"
+                           >
+                             <Edit className="w-4 h-4" />
+                           </button>
+                         )}
+                         {permissions.clients.delete && (
+                           <button 
+                             onClick={() => handleDeleteClient(client.id)}
+                             className="text-red-600 hover:text-red-700 p-1 rounded transition-colors duration-200"
+                           >
+                             <Trash2 className="w-4 h-4" />
+                           </button>
+                         )}
+                       </div>
                     </td>
                   </tr>
                 ))}
