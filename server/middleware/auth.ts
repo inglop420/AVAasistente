@@ -1,12 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import User from '../models/User';
+import { User } from '../models/User';
 
 export interface AuthRequest extends Request {
   user?: {
     id: string;
     organizationId: string;
     role: string;
+    tenantId: string;
   };
 }
 
@@ -30,7 +31,8 @@ export const authenticateToken = async (req: AuthRequest, res: Response, next: N
     req.user = {
       id: (user as any)._id.toString(),
       organizationId: (user as any).organizationId,
-      role: (user as any).role
+      role: (user as any).role,
+      tenantId: (user as any).tenantId
     };
 
     next();
@@ -53,16 +55,3 @@ export const requireRole = (roles: string[]) => {
   };
 };
 
-export const requireRole = (roles: string[]) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
-    if (!req.user) {
-      return res.status(401).json({ message: 'No autenticado' });
-    }
-
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ message: 'No tienes permisos para esta acción' });
-    }
-
-    next();
-  };
-};

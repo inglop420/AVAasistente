@@ -9,7 +9,7 @@ import appointmentRoutes from './routes/appointments';
 import documentRoutes from './routes/documents';
 import libraryRoutes from './routes/library';
 import adminRoutes from './routes/admin';
-import adminRoutes from './routes/admin';
+
 
 dotenv.config();
 
@@ -36,7 +36,7 @@ app.use('/api/appointments', appointmentRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/library', libraryRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/admin', adminRoutes);
+
 
 // Health check
 app.get('/api/health', (req, res) => {

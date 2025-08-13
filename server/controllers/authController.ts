@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
-import User from '../models/User';
+import { User } from '../models/User';
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -62,7 +62,10 @@ export const login = async (req: Request, res: Response) => {
     if (!user) {
       return res.status(400).json({ message: 'Credenciales inválidas' });
     }
-
+// Verifica que la contraseña exista y sea string
+    if (!user.password || typeof user.password !== 'string') {
+      return res.status(400).json({ message: 'Credenciales inválidas' });
+    }
     // Check password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {

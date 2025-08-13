@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
-import User from '../models/User';
+import { User } from '../models/User';
 import Organization from '../models/Organization';
 import { AuthRequest } from '../middleware/auth';
 
@@ -98,7 +98,7 @@ export const getUsers = async (req: AuthRequest, res: Response) => {
       .sort({ createdAt: -1 });
 
     // Transform users to match frontend interface
-    const usersResponse = users.map(user => ({
+    const usersResponse = users.map((user: any) => ({
       id: user._id.toString(),
       name: user.name,
       email: user.email,
