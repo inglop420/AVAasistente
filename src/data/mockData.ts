@@ -17,14 +17,14 @@ export const mockUsers: User[] = [
     id: '2',
     name: 'Carlos Ruiz',
     email: 'carlos@bufeteava.com',
-    role: 'user',
+    role: 'abogado',
     organizationId: '1'
   },
   {
     id: '3',
     name: 'Ana López',
     email: 'ana@bufeteava.com',
-    role: 'user',
+    role: 'asistente',
     organizationId: '1'
   }
 ];
