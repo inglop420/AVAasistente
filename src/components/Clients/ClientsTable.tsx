@@ -109,8 +109,6 @@ const ClientsTable: React.FC = () => {
               Nuevo Cliente
             </button>
           )}
-            </button>
-          )}
         </div>
 
         {/* Search Bar */}
