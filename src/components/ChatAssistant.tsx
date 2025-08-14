@@ -40,16 +40,16 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({
 
     try {
       // Enviar mensaje al backend que se conecta con n8n
-      const response = await chatAPI.sendMessage(currentInput);
+      const apiResponse = await chatAPI.sendMessage(currentInput);
       
-      const response: ChatMessage = {
+      const chatMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
-        text: response.data.response,
+        text: apiResponse.data.response,
         isUser: false,
         timestamp: new Date()
       };
       
-      setMessages(prev => [...prev, response]);
+      setMessages(prev => [...prev, chatMessage]);
     } catch (error) {
       console.error('Error sending message:', error);
       
