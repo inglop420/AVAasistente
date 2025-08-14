@@ -9,6 +9,7 @@ import appointmentRoutes from './routes/appointments';
 import documentRoutes from './routes/documents';
 import libraryRoutes from './routes/library';
 import adminRoutes from './routes/admin';
+import chatRoutes from './routes/chat';
 
 
 dotenv.config();
@@ -36,6 +37,7 @@ app.use('/api/appointments', appointmentRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/library', libraryRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/chat', chatRoutes);
 
 
 // Health check

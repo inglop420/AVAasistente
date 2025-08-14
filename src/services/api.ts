@@ -92,4 +92,9 @@ export const adminAPI = {
   deleteUser: (id: string) => api.delete(`/admin/users/${id}`),
 };
 
+// Chat API
+export const chatAPI = {
+  sendMessage: (message: string) => api.post('/chat/message', { message }),
+};
+
 export default api;
