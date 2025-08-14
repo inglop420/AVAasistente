@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useEffect } from 'react';
-import { Plus, Mail, Phone, Eye, Edit, Trash2 } from 'lucide-react';
+import { Plus, Mail, Phone, Edit, Trash2 } from 'lucide-react';
 import { Client } from '../../types';
 import { clientsAPI } from '../../services/api';
 import ClientModal from './ClientModal';
@@ -52,12 +52,12 @@ const ClientsTable: React.FC = () => {
   };
 
   const handleUpdateClient = async (clientData: Omit<Client, 'id' | 'organizationId' | 'createdAt'>) => {
-    if (!selectedClient) return;
-    
+    if (!selectedClient || !selectedClient._id) return;
+
     try {
-      const response = await clientsAPI.update(selectedClient.id, clientData);
+      const response = await clientsAPI.update(selectedClient._id, clientData);
       setClients(clients.map(c => 
-        c.id === selectedClient.id ? response.data : c
+        c._id === selectedClient._id ? response.data : c
       ));
       setShowModal(false);
       setSelectedClient(null);
@@ -67,11 +67,12 @@ const ClientsTable: React.FC = () => {
     }
   };
 
-  const handleDeleteClient = async (clientId: string) => {
+  const handleDeleteClient = async (clientId?: string) => {
+    if (!clientId) return;
     if (window.confirm('¿Estás seguro de que deseas eliminar este cliente?')) {
       try {
         await clientsAPI.delete(clientId);
-        setClients(clients.filter(c => c.id !== clientId));
+        setClients(clients.filter(c => c._id !== clientId));
       } catch (error) {
         console.error('Error deleting client:', error);
         alert('Error al eliminar cliente');
@@ -150,7 +151,7 @@ const ClientsTable: React.FC = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredClients.map((client) => (
-                  <tr key={client.id} className="hover:bg-gray-50">
+                  <tr key={client._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -193,9 +194,9 @@ const ClientsTable: React.FC = () => {
                              <Edit className="w-4 h-4" />
                            </button>
                          )}
-                         {permissions.clients.delete && (
+                         {permissions.clients.delete && client._id && (
                            <button 
-                             onClick={() => handleDeleteClient(client.id)}
+                             onClick={() => handleDeleteClient(client._id)}
                              className="text-red-600 hover:text-red-700 p-1 rounded transition-colors duration-200"
                            >
                              <Trash2 className="w-4 h-4" />
@@ -232,6 +233,6 @@ const ClientsTable: React.FC = () => {
       </div>
     </div>
   );
-};
+}
 
 export default ClientsTable;

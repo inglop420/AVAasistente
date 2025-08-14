@@ -163,7 +163,7 @@ const UserModal: React.FC<UserModalProps> = ({
               >
                 <option value="">Seleccionar organización</option>
                 {organizations.map(org => (
-                  <option key={org.id} value={org.id}>
+                  <option key={org._id} value={org._id}>
                     {org.name}
                   </option>
                 ))}

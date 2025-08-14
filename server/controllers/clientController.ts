@@ -4,7 +4,7 @@ import { AuthRequest } from '../middleware/auth';
 
 export const getClients = async (req: AuthRequest, res: Response) => {
   try {
-    const clients = await Client.find({ tenantId: req.user!.organizationId }).sort({ createdAt: -1 });
+    const clients = await Client.find({ tenantId: req.user!.tenantId }).sort({ createdAt: -1 });
     res.json(clients);
   } catch (error) {
     console.error('Get clients error:', error);
@@ -19,7 +19,7 @@ export const createClient = async (req: AuthRequest, res: Response) => {
     // Check if client already exists in this tenant
     const existingClient = await Client.findOne({ 
       email, 
-      tenantId: req.user!.organizationId 
+      tenantId: req.user!.tenantId 
     });
     
     if (existingClient) {
@@ -30,7 +30,7 @@ export const createClient = async (req: AuthRequest, res: Response) => {
       name,
       email,
       phone,
-      tenantId: req.user!.organizationId,
+      tenantId: req.user!.tenantId,
       expedientesCount: 0
     });
 
@@ -48,7 +48,7 @@ export const updateClient = async (req: AuthRequest, res: Response) => {
     const { name, email, phone } = req.body;
 
     const client = await Client.findOneAndUpdate(
-      { _id: id, tenantId: req.user!.organizationId },
+      { _id: id, tenantId: req.user!.tenantId },
       { name, email, phone },
       { new: true }
     );
@@ -70,7 +70,7 @@ export const deleteClient = async (req: AuthRequest, res: Response) => {
 
     const client = await Client.findOneAndDelete({
       _id: id,
-      tenantId: req.user!.organizationId
+      tenantId: req.user!.tenantId
     });
 
     if (!client) {

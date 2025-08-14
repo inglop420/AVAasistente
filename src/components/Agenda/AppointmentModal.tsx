@@ -29,6 +29,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({ onSave, onClose, de
   const fetchExpedientes = async () => {
     try {
       const response = await expedientesAPI.getAll();
+      console.log('Expedientes recibidos:', response.data);
       setExpedientes(response.data);
     } catch (error) {
       console.error('Error fetching expedientes:', error);
@@ -52,9 +53,10 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({ onSave, onClose, de
     
     const appointmentData: Omit<Appointment, 'id' | 'organizationId'> = {
       title: formData.title,
-      date: appointmentDateTime,
-      expedienteId: formData.expedienteId || undefined,
+      date: appointmentDateTime.toISOString(),
+      expedienteId: formData.expedienteId,
       expedienteTitle: expediente?.title,
+      clientId: expediente?.clientId || '',
       clientName: expediente?.clientName || formData.clientName,
       status: formData.status
     };
@@ -72,7 +74,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({ onSave, onClose, de
 
   const handleExpedienteChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const expedienteId = e.target.value;
-    const expediente = expedientes.find(exp => exp._id === expedienteId);
+    const expediente = expedientes.find(exp => exp.id === expedienteId);
     
     setFormData(prev => ({
       ...prev,
@@ -154,7 +156,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({ onSave, onClose, de
             >
               <option value="">Seleccionar expediente</option>
               {expedientes.map(expediente => (
-                <option key={expediente._id} value={expediente._id}>
+                <option key={expediente.id} value={expediente.id}>
                   {expediente.title} - {expediente.clientName}
                 </option>
               ))}

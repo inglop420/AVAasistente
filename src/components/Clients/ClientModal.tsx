@@ -21,15 +21,19 @@ const ClientModal: React.FC<ClientModalProps> = ({ client, onSave, onClose }) =>
       setFormData({
         name: client.name,
         email: client.email,
-        phone: client.phone,
-        expedientesCount: client.expedientesCount
+        phone: client.phone || '',
+        expedientesCount: client.expedientesCount || 0
       });
     }
   }, [client]);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
+  if (client && client._id) {
+    onSave({ ...formData, _id: client._id });
+  } else {
     onSave(formData);
+  }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -40,7 +40,7 @@ const ExpedienteModal: React.FC<ExpedienteModalProps> = ({ expediente, onSave, o
         clientId: expediente.clientId,
         clientName: expediente.clientName,
         status: expediente.status,
-        dueDate: expediente.dueDate ? expediente.dueDate.toISOString().split('T')[0] : ''
+        dueDate: expediente.dueDate ? expediente.dueDate: ''
       });
     }
   }, [expediente]);
@@ -52,7 +52,7 @@ const ExpedienteModal: React.FC<ExpedienteModalProps> = ({ expediente, onSave, o
     const expedienteData = {
       ...formData,
       clientName: client?.name || formData.clientName,
-      dueDate: formData.dueDate ? new Date(formData.dueDate) : undefined
+      dueDate: formData.dueDate ? formData.dueDate : undefined
     };
     
     onSave(expedienteData);

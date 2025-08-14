@@ -141,7 +141,8 @@ export const createUser = async (req: AuthRequest, res: Response) => {
       email,
       password: hashedPassword,
       role,
-      organizationId
+      organizationId,
+      tenantId: organizationId,
     });
 
     await user.save();

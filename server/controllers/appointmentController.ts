@@ -5,7 +5,7 @@ import { AuthRequest } from '../middleware/auth';
 
 export const getAppointments = async (req: AuthRequest, res: Response) => {
   try {
-    const appointments = await Appointment.find({ tenantId: req.user!.organizationId }).sort({ date: 1 });
+    const appointments = await Appointment.find({ tenantId: req.user!.tenantId }).sort({ date: 1 });
     res.json(appointments);
   } catch (error) {
     console.error('Get appointments error:', error);
@@ -24,7 +24,7 @@ export const createAppointment = async (req: AuthRequest, res: Response) => {
     if (expedienteId) {
       const expediente = await Expediente.findOne({
         _id: expedienteId,
-        tenantId: req.user!.organizationId
+        tenantId: req.user!.tenantId
       });
       
       if (expediente) {
@@ -40,7 +40,7 @@ export const createAppointment = async (req: AuthRequest, res: Response) => {
       expedienteTitle,
       clientName: finalClientName,
       status: status || 'programada',
-      tenantId: req.user!.organizationId
+      tenantId: req.user!.tenantId
     });
 
     await appointment.save();
@@ -57,7 +57,7 @@ export const updateAppointment = async (req: AuthRequest, res: Response) => {
     const { title, date, status } = req.body;
 
     const appointment = await Appointment.findOneAndUpdate(
-      { _id: id, tenantId: req.user!.organizationId },
+      { _id: id, tenantId: req.user!.tenantId },
       { 
         title, 
         date: new Date(date), 
@@ -83,7 +83,7 @@ export const deleteAppointment = async (req: AuthRequest, res: Response) => {
 
     const appointment = await Appointment.findOneAndDelete({
       _id: id,
-      tenantId: req.user!.organizationId
+      tenantId: req.user!.tenantId
     });
 
     if (!appointment) {
