@@ -62,3 +62,10 @@ export interface LibraryItem {
   url: string;
   // ...otros campos necesarios
 }
+
+export interface ChatMessage {
+  id: string;
+  text: string;
+  isUser: boolean;
+  timestamp: Date;
+}
