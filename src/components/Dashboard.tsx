@@ -161,25 +161,28 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
             {/* Menú desplegable de herramientas - Solo visible cuando no hay mensajes */}
             {showTools && (
-              <div className="absolute top-full right-0 mt-2 w-full max-w-md bg-white rounded-lg shadow-xl border border-gray-200 z-50">
-                <div className="p-4">
-                  <h3 className="text-sm font-medium text-gray-900 mb-3">Selecciona una herramienta</h3>
-                  <div className="space-y-2">
+              <div className="absolute bottom-full left-0 mb-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 animate-in slide-in-from-bottom-2 duration-200">
+                {/* Flecha apuntando al botón + */}
+                <div className="absolute -bottom-1 left-4 w-2 h-2 bg-white border-r border-b border-gray-200 transform rotate-45"></div>
+                
+                <div className="p-3">
+                  <h3 className="text-xs font-medium text-gray-700 mb-2 px-1">Herramientas</h3>
+                  <div className="space-y-1">
                     {navigationOptions.map((option) => {
                       const Icon = option.icon;
                       return (
                         <button
                           key={option.id}
                           onClick={() => handleNavigationClick(option.id)}
-                          className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors duration-200 text-left"
+                          className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-blue-50 transition-all duration-200 text-left group"
+                          title={option.description}
                         >
-                          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <Icon className="w-4 h-4 text-blue-600" />
+                          <div className="w-6 h-6 bg-gray-100 rounded-md flex items-center justify-center group-hover:bg-blue-100 transition-colors duration-200">
+                            <Icon className="w-3.5 h-3.5 text-gray-600 group-hover:text-blue-600 transition-colors duration-200" />
                           </div>
-                          <div>
-                            <div className="font-medium text-gray-900">{option.label}</div>
-                            <div className="text-sm text-gray-500">{option.description}</div>
-                          </div>
+                          <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700 transition-colors duration-200">
+                            {option.label}
+                          </span>
                         </button>
                       );
                     })}
