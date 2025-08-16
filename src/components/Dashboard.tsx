@@ -54,7 +54,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
         {/* Área de mensajes - Solo visible cuando hay mensajes */}
         {hasMessages && (
-          <div className="flex-1 max-w-4xl mx-auto w-full px-6 py-6 overflow-y-auto">
+          <div className="flex-1 max-w-4xl mx-auto w-full px-6 py-6 overflow-y-auto pb-24">
             <div className="space-y-6">
               {messages.map((message) => (
                 <div key={message.id} className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}>
@@ -112,7 +112,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         )}
 
         {/* Contenedor de la barra de búsqueda - Fijo en la parte inferior cuando hay mensajes */}
-        <div className={`w-full max-w-4xl mx-auto px-6 ${hasMessages ? 'pb-6' : ''}`}>
+        <div className={`w-full max-w-4xl mx-auto px-6 ${hasMessages ? 'fixed bottom-0 left-1/2 transform -translate-x-1/2 bg-gray-50 pb-6 pt-4' : ''}`}>
           {/* Barra de búsqueda principal */}
           <div className="relative">
             <form onSubmit={handleSendMessage} className="relative">
