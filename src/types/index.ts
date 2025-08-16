@@ -103,3 +103,10 @@ export interface ChatMessage {
   isUser: boolean;
   timestamp: Date;
 }
+
+export type NavigationItem =
+  | 'clientes'
+  | 'expedientes'
+  | 'agenda'
+  | 'documentos'
+  | 'biblioteca';

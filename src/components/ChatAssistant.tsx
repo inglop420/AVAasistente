@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, Bot, User, Minimize2, Maximize2 } from 'lucide-react';
+import { Send, Bot, User, Minimize2 } from 'lucide-react';
 import { ChatMessage } from '../types';
 import { chatAPI } from '../services/api';
 
