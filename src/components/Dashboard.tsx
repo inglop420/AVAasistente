@@ -48,8 +48,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             : 'opacity-100 transform translate-y-0 mb-12'
         }`}>
           <h1 className="text-4xl font-normal text-gray-800">
-            Hola {user?.name}, soy AVA tu asistente Jurídico, ¿en qué te puedo ayudar el día de hoy?
+            Hola {user?.name}, soy AVA tu asistente Jurídico
           </h1>
+          <h2 className="text-2xl font-normal text-gray-700">
+            ¿En qué te puedo ayudar?
+          </h2>
         </div>
 
         {/* Área de mensajes - Solo visible cuando hay mensajes */}
