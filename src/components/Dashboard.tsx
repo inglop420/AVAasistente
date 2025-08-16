@@ -112,7 +112,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
         )}
 
         {/* Contenedor de la barra de búsqueda - Fijo en la parte inferior cuando hay mensajes */}
-        <div className={`w-full max-w-4xl mx-auto px-6 ${hasMessages ? 'fixed bottom-0 left-1/2 transform -translate-x-1/2 bg-gray-50 pb-6 pt-4' : ''}`}>
+        <div className={`w-full max-w-4xl mx-auto px-6 ${hasMessages ? 'fixed bottom-0 left-1/2 transform -translate-x-1/2 bg-gray-50 pb-6 pt-4 z-40' : ''}`}>
           {/* Barra de búsqueda principal */}
           <div className="relative">
             <form onSubmit={handleSendMessage} className="relative">
@@ -160,7 +160,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             </form>
 
             {/* Menú desplegable de herramientas - Solo visible cuando no hay mensajes */}
-            {showTools && (
+            {showTools && !hasMessages && (
               <div className="absolute bottom-full left-0 mb-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 animate-in slide-in-from-bottom-2 duration-200">
                 {/* Flecha apuntando al botón + */}
                 <div className="absolute -bottom-1 left-4 w-2 h-2 bg-white border-r border-b border-gray-200 transform rotate-45"></div>

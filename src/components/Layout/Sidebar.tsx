@@ -36,25 +36,25 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isCollapse
   ];
 
   return (
-    <div className={`bg-white border-r border-gray-200 h-screen flex flex-col transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'}`}>
+    <div className={`bg-gray-50 border-r border-gray-100 h-screen flex flex-col transition-all duration-300 shadow-sm ${isCollapsed ? 'w-14' : 'w-52'}`}>
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className={`border-b border-gray-100 ${isCollapsed ? 'p-2' : 'p-3'}`}>
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <Building className="w-5 h-5 text-white" />
+          <div className={`bg-blue-600 rounded-lg flex items-center justify-center ${isCollapsed ? 'w-10 h-10' : 'w-8 h-8'}`}>
+            <Building className={`text-white ${isCollapsed ? 'w-6 h-6' : 'w-4 h-4'}`} />
           </div>
           {!isCollapsed && (
             <div>
-              <h2 className="font-bold text-gray-900">AVA Legal</h2>
-              <p className="text-xs text-gray-500">{organization?.name}</p>
+              <h2 className="font-bold text-gray-900 text-sm">AVA</h2>
+              <p className="text-xs text-gray-500">Asistente Jurídico</p>
             </div>
           )}
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4">
-        <ul className="space-y-2">
+      <nav className={`flex-1 ${isCollapsed ? 'p-1' : 'p-3'}`}>
+        <ul className={`${isCollapsed ? 'space-y-1' : 'space-y-1'}`}>
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id;
@@ -63,14 +63,24 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isCollapse
               <li key={item.id}>
                 <button
                   onClick={() => onViewChange(item.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors duration-200 ${
+                  title={isCollapsed ? item.label : undefined}
+                  className={`w-full flex items-center rounded-lg text-left transition-all duration-200 group relative ${
+                    isCollapsed ? 'justify-center p-2' : 'gap-3 px-3 py-2'
+                  } ${
                     isActive 
-                      ? 'bg-blue-50 text-blue-600 border border-blue-200' 
-                      : 'text-gray-600 hover:bg-gray-50'
+                      ? 'bg-blue-100 text-blue-700 shadow-sm' 
+                      : 'text-gray-600 hover:bg-white hover:shadow-sm'
                   }`}
                 >
-                  <Icon className="w-5 h-5" />
-                  {!isCollapsed && <span className="font-medium">{item.label}</span>}
+                  <Icon className={`${isCollapsed ? 'w-5 h-5' : 'w-4 h-4'}`} />
+                  {!isCollapsed && <span className="font-medium text-sm">{item.label}</span>}
+                  
+                  {/* Tooltip for collapsed state */}
+                  {isCollapsed && (
+                    <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                      {item.label}
+                    </div>
+                  )}
                 </button>
               </li>
             );
@@ -79,19 +89,29 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isCollapse
       </nav>
 
       {/* User section */}
-      <div className="p-4 border-t border-gray-200">
+      <div className={`border-t border-gray-100 ${isCollapsed ? 'p-2' : 'p-3'}`}>
         {!isCollapsed && (
-          <div className="mb-3">
-            <p className="text-sm font-medium text-gray-900">{user?.name}</p>
+          <div className="mb-2">
+            <p className="text-xs font-medium text-gray-900">{user?.name}</p>
             <p className="text-xs text-gray-500">{user?.role}</p>
           </div>
         )}
         <button
           onClick={logout}
-          className="flex items-center gap-3 text-gray-600 hover:text-red-600 transition-colors duration-200"
+          title={isCollapsed ? 'Cerrar Sesión' : undefined}
+          className={`flex items-center text-gray-600 hover:text-red-600 transition-colors duration-200 group relative ${
+            isCollapsed ? 'justify-center p-2 w-full' : 'gap-2'
+          }`}
         >
-          <LogOut className="w-5 h-5" />
-          {!isCollapsed && <span className="text-sm">Cerrar Sesión</span>}
+          <LogOut className={`${isCollapsed ? 'w-5 h-5' : 'w-4 h-4'}`} />
+          {!isCollapsed && <span className="text-xs">Cerrar Sesión</span>}
+          
+          {/* Tooltip for collapsed state */}
+          {isCollapsed && (
+            <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+              Cerrar Sesión
+            </div>
+          )}
         </button>
       </div>
     </div>
