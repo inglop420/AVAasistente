@@ -6,7 +6,7 @@ import Sidebar from './components/Layout/Sidebar';
 import Header from './components/Layout/Header';
 import Dashboard from './components/Dashboard';
 import ClientsTable from './components/Clients/ClientsTable';
-import KanbanBoard from './components/Expedientes/KanbanBoard';
+import ExpedientesTable from './components/Expedientes/KanbanBoard';
 import CalendarView from './components/Agenda/CalendarView';
 import DocumentGallery from './components/Documents/DocumentGallery';
 import LibraryView from './components/Library/LibraryView';
@@ -41,7 +41,7 @@ const MainApp: React.FC = () => {
       case 'clientes':
         return <ClientsTable />;
       case 'expedientes':
-        return <KanbanBoard />;
+        return <ExpedientesTable />;
       case 'agenda':
         return <CalendarView />;
       case 'documentos':

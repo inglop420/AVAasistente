@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import { useEffect } from 'react';
-import { Plus, Calendar, User } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, FileText, Calendar, User, Building } from 'lucide-react';
 import { Expediente } from '../../types';
 import { expedientesAPI } from '../../services/api';
 import ExpedienteModal from './ExpedienteModal';
 import { usePermissions } from '../../hooks/usePermissions';
 
-const KanbanBoard: React.FC = () => {
+const ExpedientesTable: React.FC = () => {
   const [expedientes, setExpedientes] = useState<Expediente[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedExpediente, setSelectedExpediente] = useState<Expediente | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
   const [loading, setLoading] = useState(true);
   const permissions = usePermissions();
 
@@ -27,11 +29,14 @@ const KanbanBoard: React.FC = () => {
       setLoading(false);
     }
   };
-  const statusColumns = [
-    { status: 'Activo' as const, title: 'Activos', color: 'bg-green-100 text-green-800' },
-    { status: 'Pendiente' as const, title: 'Pendientes', color: 'bg-yellow-100 text-yellow-800' },
-    { status: 'Cerrado' as const, title: 'Cerrados', color: 'bg-gray-100 text-gray-800' }
-  ];
+
+  const filteredExpedientes = expedientes.filter(expediente => {
+    const matchesSearch = expediente.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         expediente.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (expediente.numeroExpediente && expediente.numeroExpediente.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesStatus = filterStatus === 'all' || expediente.status === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
 
   const handleAddExpediente = async (expedienteData: Omit<Expediente, 'id' | 'organizationId' | 'createdAt'>) => {
     try {
@@ -45,39 +50,57 @@ const KanbanBoard: React.FC = () => {
     }
   };
 
-  const handleDragStart = (e: React.DragEvent, expediente: Expediente) => {
-    e.dataTransfer.setData('text/plain', expediente.id);
+  const handleEditExpediente = (expediente: Expediente) => {
+    setSelectedExpediente(expediente);
+    setShowModal(true);
   };
 
-  const handleDrop = async (e: React.DragEvent, newStatus: Expediente['status']) => {
-    e.preventDefault();
-    
-    // Verificar permisos para actualizar expedientes
-    if (!permissions.expedientes.update) {
-      alert('No tienes permisos para actualizar expedientes');
-      return;
-    }
-    
-    const expedienteId = e.dataTransfer.getData('text/plain');
+  const handleUpdateExpediente = async (expedienteData: Omit<Expediente, 'id' | 'organizationId' | 'createdAt'>) => {
+    if (!selectedExpediente) return;
     
     try {
-      const expediente = expedientes.find(exp => exp.id === expedienteId);
-      if (expediente) {
-        await expedientesAPI.update(expedienteId, { ...expediente, status: newStatus });
-        setExpedientes(expedientes.map(exp => 
-          exp.id === expedienteId 
-            ? { ...exp, status: newStatus }
-            : exp
-        ));
-      }
+      const response = await expedientesAPI.update(selectedExpediente.id, expedienteData);
+      setExpedientes(expedientes.map(exp => 
+        exp.id === selectedExpediente.id ? response.data : exp
+      ));
+      setShowModal(false);
+      setSelectedExpediente(null);
     } catch (error) {
-      console.error('Error updating expediente status:', error);
-      alert('Error al actualizar estado del expediente');
+      console.error('Error updating expediente:', error);
+      alert('Error al actualizar expediente');
     }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
+  const handleDeleteExpediente = async (expedienteId: string) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar este expediente?')) {
+      try {
+        await expedientesAPI.delete(expedienteId);
+        setExpedientes(expedientes.filter(exp => exp.id !== expedienteId));
+      } catch (error) {
+        console.error('Error deleting expediente:', error);
+        alert('Error al eliminar expediente');
+      }
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    const statusColors = {
+      'Activo': 'bg-green-100 text-green-800',
+      'Pendiente': 'bg-yellow-100 text-yellow-800',
+      'Cerrado': 'bg-gray-100 text-gray-800'
+    };
+    return statusColors[status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800';
+  };
+
+  const getOrigenIcon = (origen: string) => {
+    switch (origen) {
+      case 'Juzgados':
+        return <Building className="w-4 h-4" />;
+      case 'Oficinas':
+        return <FileText className="w-4 h-4" />;
+      default:
+        return <FileText className="w-4 h-4" />;
+    }
   };
 
   if (loading) {
@@ -99,7 +122,7 @@ const KanbanBoard: React.FC = () => {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Expedientes</h1>
-            <p className="text-gray-600 mt-1">Gestiona el estado de tus casos</p>
+            <p className="text-gray-600 mt-1">Gestiona tus casos y expedientes</p>
           </div>
           {permissions.expedientes.create && (
             <button
@@ -112,68 +135,155 @@ const KanbanBoard: React.FC = () => {
           )}
         </div>
 
-        {/* Kanban Board */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {statusColumns.map((column) => (
-            <div
-              key={column.status}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-4"
-              onDrop={(e) => handleDrop(e, column.status)}
-              onDragOver={handleDragOver}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-semibold text-gray-900">{column.title}</h2>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${column.color}`}>
-                  {expedientes.filter(exp => exp.status === column.status).length}
-                </span>
-              </div>
+        {/* Search and Filter */}
+        <div className="flex gap-4 mb-6">
+          <div className="flex-1 max-w-md">
+            <input
+              type="text"
+              placeholder="Buscar expedientes..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            />
+          </div>
+          
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option value="all">Todos los estados</option>
+            <option value="Activo">Activo</option>
+            <option value="Pendiente">Pendiente</option>
+            <option value="Cerrado">Cerrado</option>
+          </select>
+        </div>
 
-              <div className="space-y-3 min-h-96">
-                {expedientes
-                  .filter(exp => exp.status === column.status)
-                  .map((expediente) => (
-                    <div
-                      key={expediente.id}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, expediente)}
-                      className="bg-gray-50 p-4 rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200 cursor-move"
-                    >
-                      <h3 className="font-medium text-gray-900 mb-2">{expediente.title}</h3>
-                      
-                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                        <User className="w-4 h-4" />
-                        <span>{expediente.clientName}</span>
-                      </div>
-
-                      <div className="flex items-center justify-between text-xs text-gray-500">
-                        <div className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
+        {/* Expedientes Table */}
+        {filteredExpedientes.length > 0 ? (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Número
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Tipo de Proceso
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Origen
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Cliente
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Estado
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Fecha Creación
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Acciones
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredExpedientes.map((expediente) => (
+                    <tr key={expediente.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-gray-900">
+                          {expediente.numeroExpediente || 'N/A'}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm text-gray-900">
+                          {expediente.tipoProceso || expediente.title}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          {getOrigenIcon(expediente.origen || 'Oficinas')}
+                          <span className="text-sm text-gray-900">
+                            {expediente.origen || 'Oficinas'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <User className="w-4 h-4 text-gray-400" />
+                          <span className="text-sm text-gray-900">{expediente.clientName}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(expediente.status)}`}>
+                          {expediente.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Calendar className="w-4 h-4" />
                           <span>{new Date(expediente.createdAt).toLocaleDateString('es-ES')}</span>
                         </div>
-                        {expediente.dueDate && (
-                          <div className="text-yellow-600 font-medium">
-                            Vence: {new Date(expediente.dueDate).toLocaleDateString('es-ES')}
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            className="text-gray-600 hover:text-blue-600 p-1 rounded transition-colors duration-200"
+                            title="Ver expediente"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          {permissions.expedientes.update && (
+                            <button
+                              onClick={() => handleEditExpediente(expediente)}
+                              className="text-gray-600 hover:text-gray-700 p-1 rounded transition-colors duration-200"
+                              title="Editar expediente"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                          )}
+                          <button
+                            className="text-gray-600 hover:text-green-600 p-1 rounded transition-colors duration-200"
+                            title="Agregar movimiento"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                          {permissions.expedientes.delete && (
+                            <button
+                              onClick={() => handleDeleteExpediente(expediente.id)}
+                              className="text-red-600 hover:text-red-700 p-1 rounded transition-colors duration-200"
+                              title="Eliminar expediente"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
                   ))}
-
-                {expedientes.filter(exp => exp.status === column.status).length === 0 && (
-                  <div className="text-center py-12 text-gray-500">
-                    No hay expedientes en esta columna
-                  </div>
-                )}
-              </div>
+                </tbody>
+              </table>
             </div>
-          ))}
-        </div>
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <p className="text-gray-500">
+              {searchTerm || filterStatus !== 'all'
+                ? 'No se encontraron expedientes que coincidan con los filtros.'
+                : 'No hay expedientes registrados aún.'
+              }
+            </p>
+          </div>
+        )}
 
         {/* Expediente Modal */}
         {showModal && (
           <ExpedienteModal
             expediente={selectedExpediente}
-            onSave={selectedExpediente ? () => {} : handleAddExpediente}
+            onSave={selectedExpediente ? handleUpdateExpediente : handleAddExpediente}
             onClose={() => {
               setShowModal(false);
               setSelectedExpediente(null);
@@ -185,4 +295,4 @@ const KanbanBoard: React.FC = () => {
   );
 };
 
-export default KanbanBoard;
+export default ExpedientesTable;

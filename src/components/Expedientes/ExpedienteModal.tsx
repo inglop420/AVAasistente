@@ -11,6 +11,9 @@ interface ExpedienteModalProps {
 
 const ExpedienteModal: React.FC<ExpedienteModalProps> = ({ expediente, onSave, onClose }) => {
   const [formData, setFormData] = useState({
+    numeroExpediente: '',
+    tipoProceso: '',
+    origen: 'Oficinas',
     title: '',
     clientId: '',
     clientName: '',
@@ -36,6 +39,9 @@ const ExpedienteModal: React.FC<ExpedienteModalProps> = ({ expediente, onSave, o
   useEffect(() => {
     if (expediente) {
       setFormData({
+        numeroExpediente: expediente.numeroExpediente || '',
+        tipoProceso: expediente.tipoProceso || '',
+        origen: expediente.origen || 'Oficinas',
         title: expediente.title,
         clientId: expediente.clientId,
         clientName: expediente.clientName,
@@ -93,6 +99,52 @@ const ExpedienteModal: React.FC<ExpedienteModalProps> = ({ expediente, onSave, o
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Número de expediente
+            </label>
+            <input
+              type="text"
+              name="numeroExpediente"
+              value={formData.numeroExpediente}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Ej: EXP-2024-001"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tipo de proceso
+            </label>
+            <input
+              type="text"
+              name="tipoProceso"
+              value={formData.tipoProceso}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Ej: Divorcio contencioso, Reclamación de cantidad"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Origen
+            </label>
+            <select
+              name="origen"
+              value={formData.origen}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="Juzgados">Juzgados</option>
+              <option value="Oficinas">Oficinas</option>
+              <option value="Tribunales">Tribunales</option>
+              <option value="Notarías">Notarías</option>
+              <option value="Otros">Otros</option>
+            </select>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Título del expediente

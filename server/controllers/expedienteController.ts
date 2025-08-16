@@ -10,6 +10,9 @@ export const getExpedientes = async (req: AuthRequest, res: Response) => {
     // Transform expedientes to match frontend interface
     const expedientesResponse = expedientes.map(exp => ({
       id: (exp as any)._id.toString(),
+      numeroExpediente: exp.numeroExpediente,
+      tipoProceso: exp.tipoProceso,
+      origen: exp.origen,
       title: exp.title,
       clientId: exp.clientId,
       clientName: exp.clientName,
@@ -28,7 +31,7 @@ export const getExpedientes = async (req: AuthRequest, res: Response) => {
 
 export const createExpediente = async (req: AuthRequest, res: Response) => {
   try {
-    const { title, clientId, status, dueDate } = req.body;
+    const { numeroExpediente, tipoProceso, origen, title, clientId, status, dueDate } = req.body;
 
     // Verify client exists and belongs to tenant
     const client = await Client.findOne({ 
@@ -41,6 +44,9 @@ export const createExpediente = async (req: AuthRequest, res: Response) => {
     }
 
     const expediente = new Expediente({
+      numeroExpediente,
+      tipoProceso,
+      origen: origen || 'Oficinas',
       title,
       clientId,
       clientName: client.name,
@@ -62,6 +68,9 @@ export const createExpediente = async (req: AuthRequest, res: Response) => {
     // Return expediente with proper id field
     const expedienteResponse = {
       id: (expediente as any)._id.toString(),
+      numeroExpediente: expediente.numeroExpediente,
+      tipoProceso: expediente.tipoProceso,
+      origen: expediente.origen,
       title: expediente.title,
       clientId: expediente.clientId,
       clientName: expediente.clientName,
@@ -81,11 +90,14 @@ export const createExpediente = async (req: AuthRequest, res: Response) => {
 export const updateExpediente = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
-    const { title, status, dueDate } = req.body;
+    const { numeroExpediente, tipoProceso, origen, title, status, dueDate } = req.body;
 
     const expediente = await Expediente.findOneAndUpdate(
       { _id: id, tenantId: req.user!.organizationId },
       { 
+        numeroExpediente,
+        tipoProceso,
+        origen,
         title, 
         status, 
         dueDate: dueDate ? new Date(dueDate) : undefined 
@@ -100,6 +112,9 @@ export const updateExpediente = async (req: AuthRequest, res: Response) => {
     // Return expediente with proper id field
     const expedienteResponse = {
       id: (expediente as any) ._id.toString(),
+      numeroExpediente: expediente.numeroExpediente,
+      tipoProceso: expediente.tipoProceso,
+      origen: expediente.origen,
       title: expediente.title,
       clientId: expediente.clientId,
       clientName: expediente.clientName,

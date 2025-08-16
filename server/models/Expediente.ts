@@ -1,6 +1,9 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IExpediente extends Document {
+  numeroExpediente?: string;
+  tipoProceso?: string;
+  origen?: string;
   title: string;
   clientId: string;
   clientName: string;
@@ -11,6 +14,19 @@ export interface IExpediente extends Document {
 }
 
 const ExpedienteSchema = new Schema<IExpediente>({
+  numeroExpediente: {
+    type: String,
+    trim: true
+  },
+  tipoProceso: {
+    type: String,
+    trim: true
+  },
+  origen: {
+    type: String,
+    enum: ['Juzgados', 'Oficinas', 'Tribunales', 'Notarías', 'Otros'],
+    default: 'Oficinas'
+  },
   title: {
     type: String,
     required: true,

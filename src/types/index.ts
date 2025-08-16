@@ -15,6 +15,9 @@ export interface Organization {
 
 export interface Expediente {
   id: string;
+  numeroExpediente?: string;
+  tipoProceso?: string;
+  origen?: string;
   title: string;
   clientId: string;
   clientName: string;
