@@ -66,6 +66,23 @@ export interface LibraryItem {
   // ...otros campos necesarios
 }
 
+export interface Movement {
+  id: string;
+  expedienteId: string;
+  fecha: Date | string;
+  descripcion: string;
+  tipoMovimiento: 'Actuacion' | 'Escrito' | 'Documento' | 'Audiencia' | 'Resolucion' | 'Otro';
+  contenido?: string; // HTML del editor de texto
+  archivos?: {
+    nombre: string;
+    url: string;
+    tipo: string;
+    tamaño?: number;
+  }[];
+  creadoPor: string;
+  createdAt: Date | string;
+}
+
 export interface ChatMessage {
   id: string;
   text: string;

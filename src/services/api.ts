@@ -97,4 +97,12 @@ export const chatAPI = {
   sendMessage: (message: string) => api.post('/chat/message', { message }),
 };
 
+// Movements API
+export const movementsAPI = {
+  getAll: (expedienteId: string) => api.get(`/expedientes/${expedienteId}/movements`),
+  create: (expedienteId: string, movementData: any) => api.post(`/expedientes/${expedienteId}/movements`, movementData),
+  update: (expedienteId: string, movementId: string, movementData: any) => api.put(`/expedientes/${expedienteId}/movements/${movementId}`, movementData),
+  delete: (expedienteId: string, movementId: string) => api.delete(`/expedientes/${expedienteId}/movements/${movementId}`),
+};
+
 export default api;

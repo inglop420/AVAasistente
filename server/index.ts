@@ -10,6 +10,7 @@ import documentRoutes from './routes/documents';
 import libraryRoutes from './routes/library';
 import adminRoutes from './routes/admin';
 import chatRoutes from './routes/chat';
+import movementRoutes from './routes/movements';
 
 
 dotenv.config();
@@ -38,6 +39,7 @@ app.use('/api/documents', documentRoutes);
 app.use('/api/library', libraryRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/expedientes', movementRoutes);
 
 
 // Health check

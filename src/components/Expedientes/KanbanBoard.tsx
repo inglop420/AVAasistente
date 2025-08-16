@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useEffect } from 'react';
-import { Plus, Edit, Trash2, Eye, FileText, Calendar, User, Building } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, FileText, Calendar, User, Building, FolderPlus } from 'lucide-react';
 import { Expediente } from '../../types';
 import { expedientesAPI } from '../../services/api';
 import ExpedienteModal from './ExpedienteModal';
+import MovementsView from './MovementsView';
 import { usePermissions } from '../../hooks/usePermissions';
 
 const ExpedientesTable: React.FC = () => {
@@ -13,6 +14,8 @@ const ExpedientesTable: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [showMovements, setShowMovements] = useState(false);
+  const [selectedExpedienteForMovements, setSelectedExpedienteForMovements] = useState<Expediente | null>(null);
   const permissions = usePermissions();
 
   useEffect(() => {
@@ -83,6 +86,16 @@ const ExpedientesTable: React.FC = () => {
     }
   };
 
+  const handleShowMovements = (expediente: Expediente) => {
+    setSelectedExpedienteForMovements(expediente);
+    setShowMovements(true);
+  };
+
+  const handleBackFromMovements = () => {
+    setShowMovements(false);
+    setSelectedExpedienteForMovements(null);
+  };
+
   const getStatusBadge = (status: string) => {
     const statusColors = {
       'Activo': 'bg-green-100 text-green-800',
@@ -102,6 +115,17 @@ const ExpedientesTable: React.FC = () => {
         return <FileText className="w-4 h-4" />;
     }
   };
+
+  // Show movements view if selected
+  if (showMovements && selectedExpedienteForMovements) {
+    return (
+      <MovementsView
+        expedienteId={selectedExpedienteForMovements.id}
+        expedienteTitle={selectedExpedienteForMovements.title}
+        onBack={handleBackFromMovements}
+      />
+    );
+  }
 
   if (loading) {
     return (
@@ -246,9 +270,10 @@ const ExpedientesTable: React.FC = () => {
                           )}
                           <button
                             className="text-gray-600 hover:text-green-600 p-1 rounded transition-colors duration-200"
-                            title="Agregar movimiento"
+                            onClick={() => handleShowMovements(expediente)}
+                            title="Ver/Agregar movimientos"
                           >
-                            <Plus className="w-4 h-4" />
+                            <FolderPlus className="w-4 h-4" />
                           </button>
                           {permissions.expedientes.delete && (
                             <button
