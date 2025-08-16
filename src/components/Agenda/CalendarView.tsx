@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Plus, Clock, User } from 'lucide-react';
 import { Appointment } from '../../types';
-import { appointmentsAPI } from '../../services/api';
+import { appointmentsAPI, tasksAPI } from '../../services/api';
 import AppointmentModal from './AppointmentModal';
 import { usePermissions } from '../../hooks/usePermissions';
 
 const CalendarView: React.FC = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [tasks, setTasks] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -16,6 +17,7 @@ const CalendarView: React.FC = () => {
 
   useEffect(() => {
     fetchAppointments();
+    fetchTasks();
   }, []);
 
   const fetchAppointments = async () => {
@@ -28,6 +30,16 @@ const CalendarView: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const fetchTasks = async () => {
+    try {
+      const response = await tasksAPI.getAllTasks();
+      setTasks(response.data);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    }
+  };
+
   const monthNames = [
     'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
     'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
@@ -64,6 +76,12 @@ const CalendarView: React.FC = () => {
     );
   };
 
+  const getTasksForDate = (date: Date) => {
+    return tasks.filter(task => 
+      new Date(task.fechaVencimiento).toDateString() === date.toDateString()
+    );
+  };
+
   const handlePrevMonth = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
   };
@@ -89,6 +107,7 @@ const CalendarView: React.FC = () => {
 
   const days = getDaysInMonth(currentDate);
   const selectedDateAppointments = selectedDate ? getAppointmentsForDate(selectedDate) : [];
+  const selectedDateTasks = selectedDate ? getTasksForDate(selectedDate) : [];
 
   if (loading) {
     return (
@@ -174,6 +193,9 @@ const CalendarView: React.FC = () => {
                         <span className="block">{day.getDate()}</span>
                         {getAppointmentsForDate(day).length > 0 && (
                           <div className="w-2 h-2 bg-green-500 rounded-full mx-auto mt-1"></div>
+                        )}
+                        {getTasksForDate(day).length > 0 && (
+                          <div className="w-2 h-2 bg-blue-500 rounded-full mx-auto mt-1"></div>
                         )}
                       </button>
                     ) : (

@@ -11,6 +11,7 @@ import libraryRoutes from './routes/library';
 import adminRoutes from './routes/admin';
 import chatRoutes from './routes/chat';
 import movementRoutes from './routes/movements';
+import taskRoutes from './routes/tasks';
 
 
 dotenv.config();
@@ -40,6 +41,7 @@ app.use('/api/library', libraryRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/expedientes', movementRoutes);
+app.use('/api/expedientes', taskRoutes);
 
 
 // Health check

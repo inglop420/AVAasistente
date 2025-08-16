@@ -83,6 +83,20 @@ export interface Movement {
   createdAt: Date | string;
 }
 
+export interface Task {
+  id: string;
+  expedienteId: string;
+  expedienteTitle: string;
+  clientName: string;
+  titulo: string;
+  descripcion?: string;
+  prioridad: 'urgente' | 'prioritario' | 'importante' | 'recordar';
+  estado: 'pendiente' | 'realizado' | 'cancelado';
+  fechaVencimiento: Date | string;
+  creadoPor: string;
+  createdAt: Date | string;
+}
+
 export interface ChatMessage {
   id: string;
   text: string;

@@ -105,4 +105,13 @@ export const movementsAPI = {
   delete: (expedienteId: string, movementId: string) => api.delete(`/expedientes/${expedienteId}/movements/${movementId}`),
 };
 
+// Tasks API
+export const tasksAPI = {
+  getAll: (expedienteId: string) => api.get(`/expedientes/${expedienteId}/tasks`),
+  getAllTasks: () => api.get('/expedientes/tasks/all'),
+  create: (expedienteId: string, taskData: any) => api.post(`/expedientes/${expedienteId}/tasks`, taskData),
+  update: (expedienteId: string, taskId: string, taskData: any) => api.put(`/expedientes/${expedienteId}/tasks/${taskId}`, taskData),
+  delete: (expedienteId: string, taskId: string) => api.delete(`/expedientes/${expedienteId}/tasks/${taskId}`),
+};
+
 export default api;

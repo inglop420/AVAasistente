@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useEffect } from 'react';
-import { Plus, Edit, Trash2, Eye, FileText, Calendar, User, Building, FolderPlus } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, FileText, Calendar, User, Building, FolderPlus, CheckSquare } from 'lucide-react';
 import { Expediente } from '../../types';
 import { expedientesAPI } from '../../services/api';
 import ExpedienteModal from './ExpedienteModal';
 import MovementsView from './MovementsView';
+import TasksView from './TasksView';
 import { usePermissions } from '../../hooks/usePermissions';
 
 const ExpedientesTable: React.FC = () => {
@@ -16,6 +17,8 @@ const ExpedientesTable: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showMovements, setShowMovements] = useState(false);
   const [selectedExpedienteForMovements, setSelectedExpedienteForMovements] = useState<Expediente | null>(null);
+  const [showTasks, setShowTasks] = useState(false);
+  const [selectedExpedienteForTasks, setSelectedExpedienteForTasks] = useState<Expediente | null>(null);
   const permissions = usePermissions();
 
   useEffect(() => {
@@ -96,6 +99,16 @@ const ExpedientesTable: React.FC = () => {
     setSelectedExpedienteForMovements(null);
   };
 
+  const handleShowTasks = (expediente: Expediente) => {
+    setSelectedExpedienteForTasks(expediente);
+    setShowTasks(true);
+  };
+
+  const handleBackFromTasks = () => {
+    setShowTasks(false);
+    setSelectedExpedienteForTasks(null);
+  };
+
   const getStatusBadge = (status: string) => {
     const statusColors = {
       'Activo': 'bg-green-100 text-green-800',
@@ -123,6 +136,18 @@ const ExpedientesTable: React.FC = () => {
         expedienteId={selectedExpedienteForMovements.id}
         expedienteTitle={selectedExpedienteForMovements.title}
         onBack={handleBackFromMovements}
+      />
+    );
+  }
+
+  // Show tasks view if selected
+  if (showTasks && selectedExpedienteForTasks) {
+    return (
+      <TasksView
+        expedienteId={selectedExpedienteForTasks.id}
+        expedienteTitle={selectedExpedienteForTasks.title}
+        clientName={selectedExpedienteForTasks.clientName}
+        onBack={handleBackFromTasks}
       />
     );
   }
@@ -274,6 +299,13 @@ const ExpedientesTable: React.FC = () => {
                             title="Ver/Agregar movimientos"
                           >
                             <FolderPlus className="w-4 h-4" />
+                          </button>
+                          <button
+                            className="text-gray-600 hover:text-blue-600 p-1 rounded transition-colors duration-200"
+                            onClick={() => handleShowTasks(expediente)}
+                            title="Ver/Agregar tareas"
+                          >
+                            <CheckSquare className="w-4 h-4" />
                           </button>
                           {permissions.expedientes.delete && (
                             <button
