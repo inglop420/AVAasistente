@@ -158,3 +158,41 @@ export const deleteExpediente = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: 'Error al eliminar expediente' });
   }
 };
+
+export const createExpedienteFromData = async (
+  data: {
+    numero: string;
+    tipoProceso: string;
+    origen: string;
+    clientName: string;
+    clientId: string;
+    title: string;
+    status: string;
+    dueDate?: string;
+  },
+  tenantId: string
+) => {
+  try {
+    // Verifica si el expediente ya existe en este tenant
+    const existingExpediente = await Expediente.findOne({ numeroExpediente: data.numero, tenantId });
+    if (existingExpediente) throw new Error('El expediente ya existe');
+
+    const expediente = new Expediente({
+      numeroExpediente: data.numero,
+      tipoProceso: data.tipoProceso,
+      origen: data.origen,
+      title: data.title,
+      clientId: data.clientId,
+      clientName: data.clientName,
+      status: data.status || 'Activo',
+      tenantId,
+      dueDate: data.dueDate ? new Date(data.dueDate) : undefined
+    });
+
+    await expediente.save();
+    return expediente;
+  } catch (error) {
+    console.error('Create expediente error:', error);
+    throw error;
+  }
+};

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Mic, Users, Briefcase, Calendar, FileText, BookOpen, Send } from 'lucide-react';
+import { Plus, Mic, Users, Briefcase, Calendar, Send } from 'lucide-react';
 import { NavigationItem } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import ClientModal from './Clients/ClientModal';

@@ -83,3 +83,33 @@ export const deleteClient = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: 'Error al eliminar cliente' });
   }
 };
+
+export const createClientFromData = async (data: { name: string; email: string; phone: string }, tenantId: string) => {
+  try {
+    const { name, email, phone } = data;
+
+    // Check if client already exists in this tenant
+    const existingClient = await Client.findOne({ 
+      email, 
+      tenantId
+    });
+    
+    if (existingClient) {
+      throw new Error('El cliente ya existe');
+    }
+
+    const client = new Client({
+      name,
+      email,
+      phone,
+      tenantId,
+      expedientesCount: 0
+    });
+
+    await client.save();
+    return client;
+  } catch (error) {
+    console.error('Create client error:', error);
+    throw error;
+  }
+};
