@@ -114,4 +114,12 @@ export const tasksAPI = {
   delete: (expedienteId: string, taskId: string) => api.delete(`/expedientes/${expedienteId}/tasks/${taskId}`),
 };
 
+// SCJN API
+export const scjnAPI = {
+  search: (filters: any) => api.post('/scjn/search', filters),
+  getDocumentDetail: (type: string, id: string) => api.get(`/scjn/document/${type}/${id}`),
+  getCount: (filters: any) => api.post('/scjn/count', filters),
+  downloadResults: (documents: any[]) => api.post('/scjn/download', { documents }, { responseType: 'blob' }),
+};
+
 export default api;

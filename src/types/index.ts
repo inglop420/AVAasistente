@@ -104,6 +104,41 @@ export interface ChatMessage {
   timestamp: Date;
 }
 
+export interface SCJNDocument {
+  id: string;
+  titulo: string;
+  rubro?: string;
+  tipo: 'Tesis' | 'Engrose';
+  epoca?: string;
+  instancia?: string;
+  organo?: string;
+  materia?: string;
+  año?: number;
+  ponente?: string;
+  asunto?: string;
+  fechaPublicacion?: string;
+  contenido?: string;
+  url?: string;
+}
+
+export interface SCJNSearchFilters {
+  fuente: 'SJF' | 'SIJ';
+  categoria: string;
+  palabraClave?: string;
+  epoca?: string;
+  año?: number;
+  instancia?: string;
+  organo?: string;
+  materia?: string;
+  asunto?: string;
+  ponente?: string;
+  tipo?: string;
+  fechaInicio?: string;
+  fechaFin?: string;
+  page?: number;
+  limit?: number;
+}
+
 export type NavigationItem =
   | 'clientes'
   | 'expedientes'
