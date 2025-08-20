@@ -160,7 +160,23 @@ const fetchSCJNDocuments = async (endpoint: string, filters: SearchFilters): Pro
 
 export const searchDocuments = async (req: AuthRequest, res: Response) => {
   try {
-    const filters: SearchFilters = req.body;
+    const filters: SearchFilters = {
+      fuente: req.query.fuente as 'SJF' | 'SIJ',
+      categoria: req.query.categoria as string,
+      palabraClave: req.query.palabraClave as string,
+      epoca: req.query.epoca as string,
+      año: req.query.año ? parseInt(req.query.año as string) : undefined,
+      instancia: req.query.instancia as string,
+      organo: req.query.organo as string,
+      materia: req.query.materia as string,
+      asunto: req.query.asunto as string,
+      ponente: req.query.ponente as string,
+      tipo: req.query.tipo as string,
+      fechaInicio: req.query.fechaInicio as string,
+      fechaFin: req.query.fechaFin as string,
+      page: req.query.page ? parseInt(req.query.page as string) : 1,
+      limit: req.query.limit ? parseInt(req.query.limit as string) : 20
+    };
     
     // Validar filtros básicos
     if (!filters.fuente || !filters.categoria) {
@@ -271,7 +287,24 @@ export const getDocumentDetail = async (req: AuthRequest, res: Response) => {
 
 export const getDocumentCount = async (req: AuthRequest, res: Response) => {
   try {
-    const filters: SearchFilters = req.body;
+    const filters: SearchFilters = {
+      fuente: req.query.fuente as 'SJF' | 'SIJ',
+      categoria: req.query.categoria as string,
+      palabraClave: req.query.palabraClave as string,
+      epoca: req.query.epoca as string,
+      año: req.query.año ? parseInt(req.query.año as string) : undefined,
+      instancia: req.query.instancia as string,
+      organo: req.query.organo as string,
+      materia: req.query.materia as string,
+      asunto: req.query.asunto as string,
+      ponente: req.query.ponente as string,
+      tipo: req.query.tipo as string,
+      fechaInicio: req.query.fechaInicio as string,
+      fechaFin: req.query.fechaFin as string,
+      page: req.query.page ? parseInt(req.query.page as string) : 1,
+      limit: req.query.limit ? parseInt(req.query.limit as string) : 20
+    };
+    
     const params = buildSCJNQuery(filters);
     
     let total = 0;

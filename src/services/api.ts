@@ -116,9 +116,9 @@ export const tasksAPI = {
 
 // SCJN API
 export const scjnAPI = {
-  search: (filters: any) => api.post('/scjn/search', filters),
+  search: (filters: any) => api.get('/scjn/search', { params: filters }),
   getDocumentDetail: (type: string, id: string) => api.get(`/scjn/document/${type}/${id}`),
-  getCount: (filters: any) => api.post('/scjn/count', filters),
+  getCount: (filters: any) => api.get('/scjn/count', { params: filters }),
   downloadResults: (documents: any[]) => api.post('/scjn/download', { documents }, { responseType: 'blob' }),
 };
 
