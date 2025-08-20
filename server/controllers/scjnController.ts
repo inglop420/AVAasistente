@@ -1,10 +1,9 @@
 import { Response } from 'express';
 import axios from 'axios';
 import { AuthRequest } from '../middleware/auth';
-import createCsvWriter from 'csv-writer';
 import path from 'path';
 import fs from 'fs';
-
+const createCsvWriter = require('csv-writer').createObjectCsvWriter;
 const SCJN_BASE_URL = 'https://bicentenario.scjn.gob.mx/repositorio-scjn/api/v1';
 
 interface SearchFilters {
