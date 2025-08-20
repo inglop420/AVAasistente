@@ -1,197 +1,700 @@
 import React, { useState } from 'react';
-import { useEffect } from 'react';
-import { Search, Filter, Book, Eye, Star } from 'lucide-react';
-import { LibraryItem } from '../../types';
-import { libraryAPI } from '../../services/api';
+import { Search, Filter, Book, Eye, Download, ChevronDown, ChevronUp, AlertTriangle, FileText, Calendar, Building, User, Scale } from 'lucide-react';
+import { SCJNDocument, SCJNSearchFilters } from '../../types';
+import { scjnAPI } from '../../services/api';
 
 const LibraryView: React.FC = () => {
-  const [libraryItems, setLibraryItems] = useState<LibraryItem[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedItem, setSelectedItem] = useState<LibraryItem | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [searchResults, setSearchResults] = useState<SCJNDocument[]>([]);
+  const [selectedDocument, setSelectedDocument] = useState<SCJNDocument | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [totalResults, setTotalResults] = useState(0);
+  const [warning, setWarning] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchLibraryItems();
-  }, []);
+  const [filters, setFilters] = useState<SCJNSearchFilters>({
+    fuente: 'SJF',
+    categoria: 'Tesis',
+    palabraClave: '',
+    epoca: '',
+    año: undefined,
+    instancia: '',
+    organo: '',
+    materia: '',
+    asunto: '',
+    ponente: '',
+    tipo: '',
+    fechaInicio: '',
+    fechaFin: '',
+    page: 1,
+    limit: 20
+  });
 
-  const fetchLibraryItems = async () => {
+  // Opciones de filtros
+  const fuenteOptions = [
+    { value: 'SJF', label: 'SJF - Semanario Judicial de la Federación' },
+    { value: 'SIJ', label: 'SIJ - Sistema de Informática Jurídica' }
+  ];
+
+  const categoriaOptions = {
+    SJF: [
+      { value: 'Tesis', label: 'Tesis' },
+      { value: 'Precedente', label: 'Precedente (Sentencias)' },
+      { value: 'Votos', label: 'Votos' },
+      { value: 'Acuerdos', label: 'Acuerdos' }
+    ],
+    SIJ: [
+      { value: 'Sentencia', label: 'Sentencia' },
+      { value: 'Versiones', label: 'Versiones taquigráficas' }
+    ]
+  };
+
+  const epocaOptions = [
+    { value: 'Quinta', label: 'Quinta Época' },
+    { value: 'Sexta', label: 'Sexta Época' },
+    { value: 'Séptima', label: 'Séptima Época' },
+    { value: 'Octava', label: 'Octava Época' },
+    { value: 'Novena', label: 'Novena Época' },
+    { value: 'Décima', label: 'Décima Época' },
+    { value: 'Undécima', label: 'Undécima Época' }
+  ];
+
+  const instanciaOptions = [
+    { value: 'Pleno', label: 'Pleno' },
+    { value: 'Primera Sala', label: 'Primera Sala' },
+    { value: 'Segunda Sala', label: 'Segunda Sala' },
+    { value: 'Tribunales Colegiados', label: 'Tribunales Colegiados' },
+    { value: 'Tribunales Unitarios', label: 'Tribunales Unitarios' },
+    { value: 'Juzgados de Distrito', label: 'Juzgados de Distrito' }
+  ];
+
+  const materiaOptions = [
+    { value: 'Constitucional', label: 'Constitucional' },
+    { value: 'Civil', label: 'Civil' },
+    { value: 'Penal', label: 'Penal' },
+    { value: 'Administrativa', label: 'Administrativa' },
+    { value: 'Laboral', label: 'Laboral' },
+    { value: 'Mercantil', label: 'Mercantil' },
+    { value: 'Fiscal', label: 'Fiscal' },
+    { value: 'Familiar', label: 'Familiar' }
+  ];
+
+  const tipoAsuntoOptions = [
+    { value: 'Acción de Inconstitucionalidad', label: 'Acción de Inconstitucionalidad' },
+    { value: 'Amparo directo', label: 'Amparo directo' },
+    { value: 'Amparo en revisión', label: 'Amparo en revisión' },
+    { value: 'Controversia constitucional', label: 'Controversia constitucional' },
+    { value: 'Recurso de revisión', label: 'Recurso de revisión' }
+  ];
+
+  const handleFilterChange = (field: keyof SCJNSearchFilters, value: any) => {
+    setFilters(prev => ({
+      ...prev,
+      [field]: value,
+      // Reset página al cambiar filtros
+      page: 1
+    }));
+  };
+
+  const handleFuenteChange = (fuente: 'SJF' | 'SIJ') => {
+    setFilters(prev => ({
+      ...prev,
+      fuente,
+      categoria: fuente === 'SJF' ? 'Tesis' : 'Sentencia',
+      page: 1
+    }));
+  };
+
+  const handleSearch = async () => {
+    setLoading(true);
+    setError(null);
+    setWarning(null);
+    
     try {
-      const response = await libraryAPI.getAll();
-      setLibraryItems(response.data);
+      const response = await scjnAPI.search(filters);
+      
+      if (response.data.success) {
+        setSearchResults(response.data.documents);
+        setTotalResults(response.data.total);
+        setWarning(response.data.warning);
+      } else {
+        setError(response.data.message || 'Error en la búsqueda');
+        setSearchResults([]);
+        setTotalResults(0);
+      }
     } catch (error) {
-      console.error('Error fetching library items:', error);
+      console.error('Search error:', error);
+      setError('Error al conectar con la API de SCJN. Intenta nuevamente.');
+      setSearchResults([]);
+      setTotalResults(0);
     } finally {
       setLoading(false);
     }
   };
-  const categories = ['all', ...Array.from(new Set(libraryItems.map(item => item.category)))];
 
-  const filteredItems = libraryItems.filter(item => {
-    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.content.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
-
-  const getCategoryColor = (category: string) => {
-    const colors: Record<string, string> = {
-      'Derecho Civil': 'bg-blue-100 text-blue-800',
-      'Procesal Civil': 'bg-green-100 text-green-800',
-      'Derecho Laboral': 'bg-yellow-100 text-yellow-800',
-      'Derecho Penal': 'bg-red-100 text-red-800',
-      'Derecho Mercantil': 'bg-purple-100 text-purple-800'
-    };
-    return colors[category] || 'bg-gray-100 text-gray-800';
+  const handleViewDocument = async (document: SCJNDocument) => {
+    try {
+      const response = await scjnAPI.getDocumentDetail(
+        document.tipo === 'Tesis' ? 'tesis' : 'engroses',
+        document.id
+      );
+      
+      if (response.data.success) {
+        setSelectedDocument(response.data.document);
+      }
+    } catch (error) {
+      console.error('Error fetching document detail:', error);
+      alert('Error al cargar el detalle del documento');
+    }
   };
 
-  if (loading) {
-    return (
-      <div className="p-6 bg-gray-50 min-h-screen">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center py-12">
-            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-600">Cargando biblioteca...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const handleDownloadResults = async () => {
+    try {
+      const response = await scjnAPI.downloadResults(searchResults);
+      
+      // Crear blob y descargar
+      const blob = new Blob([response.data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `scjn-resultados-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Download error:', error);
+      alert('Error al descargar resultados');
+    }
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      fuente: 'SJF',
+      categoria: 'Tesis',
+      palabraClave: '',
+      epoca: '',
+      año: undefined,
+      instancia: '',
+      organo: '',
+      materia: '',
+      asunto: '',
+      ponente: '',
+      tipo: '',
+      fechaInicio: '',
+      fechaFin: '',
+      page: 1,
+      limit: 20
+    });
+    setSearchResults([]);
+    setTotalResults(0);
+    setWarning(null);
+    setError(null);
+  };
+
+  const getDocumentTypeColor = (tipo: string) => {
+    return tipo === 'Tesis' 
+      ? 'bg-blue-100 text-blue-800' 
+      : 'bg-green-100 text-green-800';
+  };
+
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: currentYear - 1950 + 1 }, (_, i) => currentYear - i);
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Biblioteca Jurídica</h1>
-          <p className="text-gray-600">Consulta leyes, jurisprudencias y documentos legales</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Biblioteca Jurídica SCJN</h1>
+          <p className="text-gray-600">Búsqueda avanzada en el repositorio oficial de la Suprema Corte de Justicia de la Nación</p>
         </div>
 
-        {/* Search and Filter */}
-        <div className="flex gap-4 mb-8">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Buscar en la biblioteca..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          
-          <div className="relative">
-            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="pl-10 pr-8 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white min-w-48"
-            >
-              <option value="all">Todas las categorías</option>
-              {categories.slice(1).map(category => (
-                <option key={category} value={category}>{category}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Library Grid */}
-        {filteredItems.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredItems.map((item) => (
-              <div key={item.id} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <Book className="w-5 h-5 text-blue-600" />
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(item.category)}`}>
-                      {item.category}
-                    </span>
-                  </div>
-                  <button className="text-gray-400 hover:text-yellow-500 transition-colors duration-200">
-                    <Star className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <h3 className="font-semibold text-gray-900 mb-3 line-clamp-2">
-                  {item.title}
-                </h3>
-
-                <p className="text-sm text-gray-600 mb-4 line-clamp-3">
-                  {item.content}
-                </p>
-
-                <div className="flex items-center justify-between">
-                  <div className="text-xs text-gray-500">
-                    Documento legal
-                  </div>
-                  <button
-                    onClick={() => setSelectedItem(item)}
-                    className="flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors duration-200"
-                  >
-                    <Eye className="w-4 h-4" />
-                    Ver
-                  </button>
-                </div>
+        {/* Formulario de Búsqueda */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+          {/* Búsqueda Principal */}
+          <div className="space-y-6">
+            {/* Palabra Clave */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Búsqueda por palabra clave
+              </label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  value={filters.palabraClave}
+                  onChange={(e) => handleFilterChange('palabraClave', e.target.value)}
+                  placeholder="Buscar en títulos, rubros y contenido..."
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
               </div>
-            ))}
+            </div>
+
+            {/* Fuente y Categoría */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Fuente de información
+                </label>
+                <select
+                  value={filters.fuente}
+                  onChange={(e) => handleFuenteChange(e.target.value as 'SJF' | 'SIJ')}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  {fuenteOptions.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Categoría
+                </label>
+                <select
+                  value={filters.categoria}
+                  onChange={(e) => handleFilterChange('categoria', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  {categoriaOptions[filters.fuente].map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Filtros Avanzados */}
+            <div>
+              <button
+                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200"
+              >
+                <Filter className="w-4 h-4" />
+                Filtros avanzados
+                {showAdvancedFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
+
+              {showAdvancedFilters && (
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Época */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Época
+                      </label>
+                      <select
+                        value={filters.epoca}
+                        onChange={(e) => handleFilterChange('epoca', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Todas las épocas</option>
+                        {epocaOptions.map(option => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Año */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Año
+                      </label>
+                      <select
+                        value={filters.año || ''}
+                        onChange={(e) => handleFilterChange('año', e.target.value ? parseInt(e.target.value) : undefined)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Todos los años</option>
+                        {yearOptions.map(year => (
+                          <option key={year} value={year}>
+                            {year}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Instancia */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Instancia
+                      </label>
+                      <select
+                        value={filters.instancia}
+                        onChange={(e) => handleFilterChange('instancia', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Todas las instancias</option>
+                        {instanciaOptions.map(option => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Materia */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Materia
+                      </label>
+                      <select
+                        value={filters.materia}
+                        onChange={(e) => handleFilterChange('materia', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      >
+                        <option value="">Todas las materias</option>
+                        {materiaOptions.map(option => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Ponente */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Ponente
+                      </label>
+                      <input
+                        type="text"
+                        value={filters.ponente}
+                        onChange={(e) => handleFilterChange('ponente', e.target.value)}
+                        placeholder="Nombre del ponente"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    {/* Asunto */}
+                    {filters.fuente === 'SIJ' && filters.categoria === 'Sentencia' && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Tipo de asunto
+                        </label>
+                        <select
+                          value={filters.asunto}
+                          onChange={(e) => handleFilterChange('asunto', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="">Todos los asuntos</option>
+                          {tipoAsuntoOptions.map(option => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Rango de Fechas */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Fecha inicio
+                      </label>
+                      <input
+                        type="date"
+                        value={filters.fechaInicio}
+                        onChange={(e) => handleFilterChange('fechaInicio', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Fecha fin
+                      </label>
+                      <input
+                        type="date"
+                        value={filters.fechaFin}
+                        onChange={(e) => handleFilterChange('fechaFin', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Botones de Acción */}
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleSearch}
+                disabled={loading}
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 flex items-center gap-2"
+              >
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Search className="w-5 h-5" />
+                )}
+                {loading ? 'Buscando...' : 'Buscar'}
+              </button>
+
+              <button
+                onClick={clearFilters}
+                className="border border-gray-300 text-gray-700 px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+              >
+                Limpiar filtros
+              </button>
+
+              {searchResults.length > 0 && (
+                <button
+                  onClick={handleDownloadResults}
+                  className="border border-gray-300 text-gray-700 px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors duration-200 flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Descargar CSV
+                </button>
+              )}
+            </div>
           </div>
-        ) : (
-          <div className="text-center py-12">
-            <Book className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">
-              {searchTerm || selectedCategory !== 'all'
-                ? 'No se encontraron documentos que coincidan con los filtros.'
-                : 'No hay documentos en la biblioteca aún.'
-              }
-            </p>
+        </div>
+
+        {/* Advertencias y Errores */}
+        {warning && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5" />
+              <div>
+                <h4 className="font-medium text-yellow-800 mb-1">Advertencia</h4>
+                <p className="text-sm text-yellow-700">{warning}</p>
+              </div>
+            </div>
           </div>
         )}
 
-        {/* Document Modal */}
-        {selectedItem && (
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5" />
+              <div>
+                <h4 className="font-medium text-red-800 mb-1">Error</h4>
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Resultados */}
+        {searchResults.length > 0 && (
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            {/* Header de Resultados */}
+            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Resultados de búsqueda
+                </h3>
+                <div className="text-sm text-gray-600">
+                  {totalResults.toLocaleString()} documentos encontrados
+                </div>
+              </div>
+            </div>
+
+            {/* Tabla de Resultados */}
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Título/Rubro
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Tipo
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Época
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Instancia
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Materia
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Año
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Acciones
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {searchResults.map((document) => (
+                    <tr key={document.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <div className="text-sm font-medium text-gray-900 line-clamp-2">
+                          {document.titulo}
+                        </div>
+                        {document.rubro && (
+                          <div className="text-xs text-gray-500 mt-1 line-clamp-1">
+                            {document.rubro}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDocumentTypeColor(document.tipo)}`}>
+                          {document.tipo}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {document.epoca || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {document.instancia || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {document.materia || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {document.año || '-'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button
+                          onClick={() => handleViewDocument(document)}
+                          className="text-blue-600 hover:text-blue-700 flex items-center gap-1 ml-auto transition-colors duration-200"
+                        >
+                          <Eye className="w-4 h-4" />
+                          Ver
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Estado Vacío */}
+        {!loading && searchResults.length === 0 && !error && (
+          <div className="text-center py-12">
+            <Scale className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Biblioteca Jurídica SCJN</h3>
+            <p className="text-gray-500 mb-6">
+              Utiliza los filtros de búsqueda para encontrar tesis, sentencias y documentos jurídicos oficiales.
+            </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto">
+              <h4 className="font-medium text-blue-900 mb-2">Fuentes disponibles:</h4>
+              <ul className="text-sm text-blue-700 space-y-1">
+                <li>• SJF: Semanario Judicial de la Federación</li>
+                <li>• SIJ: Sistema de Informática Jurídica</li>
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Detalle del Documento */}
+        {selectedDocument && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
               <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                <div>
-                  <h2 className="text-xl font-semibold text-gray-900">{selectedItem.title}</h2>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-2 ${getCategoryColor(selectedItem.category)}`}>
-                    {selectedItem.category}
-                  </span>
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDocumentTypeColor(selectedDocument.tipo)}`}>
+                      {selectedDocument.tipo}
+                    </span>
+                    {selectedDocument.epoca && (
+                      <span className="text-sm text-gray-500">{selectedDocument.epoca}</span>
+                    )}
+                  </div>
+                  <h2 className="text-xl font-semibold text-gray-900 line-clamp-2">
+                    {selectedDocument.titulo}
+                  </h2>
+                  {selectedDocument.rubro && (
+                    <p className="text-sm text-gray-600 mt-1">{selectedDocument.rubro}</p>
+                  )}
                 </div>
                 <button
-                  onClick={() => setSelectedItem(null)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors duration-200"
+                  onClick={() => setSelectedDocument(null)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors duration-200 ml-4"
                 >
                   <span className="text-2xl">×</span>
                 </button>
               </div>
 
               <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
-                <div className="prose max-w-none">
-                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                    {selectedItem.content}
-                  </p>
-                  
-                  <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-                    <h4 className="font-medium text-gray-900 mb-2">Información del documento</h4>
-                    <div className="text-sm text-gray-600 space-y-1">
-                      <p><strong>Categoría:</strong> {selectedItem.category}</p>
-                      <p><strong>Tipo:</strong> Documento jurídico</p>
-                      <p><strong>Fuente:</strong> Base de datos legal</p>
+                {/* Metadatos */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+                  {selectedDocument.instancia && (
+                    <div className="flex items-center gap-2">
+                      <Building className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm"><strong>Instancia:</strong> {selectedDocument.instancia}</span>
+                    </div>
+                  )}
+                  {selectedDocument.organo && (
+                    <div className="flex items-center gap-2">
+                      <Scale className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm"><strong>Órgano:</strong> {selectedDocument.organo}</span>
+                    </div>
+                  )}
+                  {selectedDocument.materia && (
+                    <div className="flex items-center gap-2">
+                      <Book className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm"><strong>Materia:</strong> {selectedDocument.materia}</span>
+                    </div>
+                  )}
+                  {selectedDocument.ponente && (
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm"><strong>Ponente:</strong> {selectedDocument.ponente}</span>
+                    </div>
+                  )}
+                  {selectedDocument.año && (
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm"><strong>Año:</strong> {selectedDocument.año}</span>
+                    </div>
+                  )}
+                  {selectedDocument.asunto && (
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm"><strong>Asunto:</strong> {selectedDocument.asunto}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Contenido */}
+                {selectedDocument.contenido ? (
+                  <div className="prose max-w-none">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Contenido</h3>
+                    <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                      {selectedDocument.contenido}
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500">Contenido no disponible para este documento</p>
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end gap-3 p-6 border-t border-gray-200">
                 <button
-                  onClick={() => setSelectedItem(null)}
+                  onClick={() => setSelectedDocument(null)}
                   className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200"
                 >
                   Cerrar
                 </button>
-                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
-                  Añadir a favoritos
-                </button>
+                {selectedDocument.url && (
+                  <a
+                    href={selectedDocument.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center gap-2"
+                  >
+                    <Eye className="w-4 h-4" />
+                    Ver en SCJN
+                  </a>
+                )}
               </div>
             </div>
           </div>
