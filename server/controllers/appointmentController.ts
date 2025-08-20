@@ -2,6 +2,7 @@ import { Response } from 'express';
 import Appointment from '../models/Appointment';
 import Expediente from '../models/Expediente';
 import { AuthRequest } from '../middleware/auth';
+import { ArrayExpressionOperatorReturningObject } from 'mongoose';
 
 export const getAppointments = async (req: AuthRequest, res: Response) => {
   try {
@@ -94,5 +95,27 @@ export const deleteAppointment = async (req: AuthRequest, res: Response) => {
   } catch (error) {
     console.error('Delete appointment error:', error);
     res.status(500).json({ message: 'Error al eliminar cita' });
+  }
+};
+
+export const createAppointmentFromData = async (
+  data: { title?: string; motivo?: string; date: Date; clientName: string; status?: string; tenantId: string; expedienteId?: string },
+  tenantId: string
+) => {
+  try {
+    const appointment = new Appointment({
+      title: data.motivo || data.title || 'Cita',
+      date: data.date,
+      clientName: data.clientName,
+      status: data.status || 'programada',
+      tenantId,
+      expedienteId: data.expedienteId
+    });
+
+    await appointment.save();
+    return appointment;
+  } catch (error) {
+    console.error('Create appointment error:', error);
+    throw error;
   }
 };

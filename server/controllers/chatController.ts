@@ -5,6 +5,8 @@ import { createClient } from './clientController';
 import { createClientFromData } from './clientController';
 import { createExpedienteFromData  } from './expedienteController';
 import Client from '../models/Client';
+import { createAppointmentFromData } from './appointmentController';
+import Expediente from '../models/Expediente';
 
 // Agrega la función aquí, antes de export const sendChatMessage...
 function extractDeepestValue(obj: any): string {
@@ -140,6 +142,7 @@ export const sendChatMessage = async (req: AuthRequest, res: Response) => {
 const internalData = extractInternalJson(assistantResponse);
 console.log('internalData:', internalData);
 
+// CREA USUARIOS
 if (internalData?.action === 'createClient' && internalData?.data) {
     if (!req.user || !req.user.tenantId) {
     return res.status(400).json({
@@ -176,7 +179,8 @@ if (internalData?.action === 'createClient' && internalData?.data) {
   }
   return;
 }
-  
+
+// CREA EXPEDIENTES
 if (internalData?.action === 'createExpediente' && internalData?.data) {
   if (!req.user || !req.user.tenantId) {
     return res.status(400).json({
@@ -255,6 +259,138 @@ try {
   }
   return;
 }
+
+// AGENDAR CITA
+if (internalData?.action === 'agendarCita' && internalData?.data) {
+  if (!req.user || !req.user.tenantId) {
+    return res.status(400).json({
+      success: false,
+      response: 'No se encontró información de usuario o tenantId.',
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  const citaData = { ...internalData.data };
+
+  // Busca el cliente por expediente o por nombre
+let client: any = null;
+let expedienteId: string | undefined = undefined;
+let expedienteTitle: string | undefined = undefined;
+
+if (citaData.caseId) {
+  // Buscar por número de expediente
+  const expediente = await Expediente.findOne({ numeroExpediente: citaData.caseId, tenantId: req.user.tenantId });
+  console.log('Expediente encontrado:', expediente);
+  if (!expediente) {
+    return res.status(400).json({
+      success: false,
+      response: `No se encontró el expediente "${citaData.caseId}" en el sistema.`,
+      timestamp: new Date().toISOString()
+    });
+  }
+  expedienteId = (expediente._id as any).toString();
+  expedienteTitle = expediente.title;
+  client = await Client.findById(expediente.clientId);
+  console.log('Cliente encontrado:', client);
+  if (!client) {
+    return res.status(400).json({
+      success: false,
+      response: `No se encontró el cliente relacionado al expediente "${citaData.caseId}".`,
+      timestamp: new Date().toISOString()
+    });
+  }
+} else if (citaData.clienteId) {
+  // Buscar por nombre de cliente
+  function normalize(str: string) {
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  }
+  const clients = await Client.find({ tenantId: req.user.tenantId });
+  client = clients.find(c => normalize(c.name) === normalize(citaData.clienteId));
+  if (!client) {
+    return res.status(400).json({
+      success: false,
+      response: `No se encontró el cliente "${citaData.clienteId}" en el sistema.`,
+      timestamp: new Date().toISOString()
+    });
+  }
+}
+
+  // Normaliza la fecha y hora
+  let appointmentDate: Date | undefined = undefined;
+  if (citaData.fecha && citaData.hora) {
+    appointmentDate = new Date(`${citaData.fecha}T${citaData.hora}`);
+    if (isNaN(appointmentDate.getTime())) {
+      return res.status(400).json({
+        success: false,
+        response: 'La fecha u hora de la cita no es válida.',
+        timestamp: new Date().toISOString()
+      });
+    }
+  } else if (citaData.date) {
+    appointmentDate = new Date(citaData.date);
+    console.log('Fecha para la cita:', appointmentDate);
+    if (isNaN(appointmentDate.getTime())) {
+      return res.status(400).json({
+        success: false,
+        response: 'La fecha de la cita no es válida.',
+        timestamp: new Date().toISOString()
+      });
+    }
+  } else {
+    return res.status(400).json({
+      success: false,
+      response: 'Debes proporcionar fecha y hora para la cita.',
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  // Normaliza el status
+  const statusMap: Record<string, string> = {
+    'Programada': 'programada',
+    'Completada': 'completada',
+    'Cancelada': 'cancelada',
+    'Activo': 'programada',
+    'Pendiente': 'programada'
+  };
+  citaData.status = statusMap[citaData.status] || 'programada';
+
+  // Construye el objeto para crear la cita
+  const appointmentPayload = {
+    title: citaData.motivo || citaData.title || 'Cita',
+    date: appointmentDate,
+    expedienteId,
+    expedienteTitle,
+    clientName: client.name,
+    status: citaData.status,
+    tenantId: req.user.tenantId,
+    
+    };
+
+
+    console.log('Payload para crear cita:', appointmentPayload);
+
+  try {
+    const cita = await createAppointmentFromData(appointmentPayload, req.user.tenantId);
+    res.status(201).json({
+      success: true,
+      response: 'Cita agendada con éxito.',
+      cita,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    let errorMsg = 'Error al agendar cita';
+    if (error instanceof Error) {
+      errorMsg = error.message;
+    }
+    res.status(400).json({
+      success: false,
+      response: errorMsg,
+      timestamp: new Date().toISOString()
+    });
+  }
+  return;
+}
+
 
   // Limpia el mensaje antes de enviarlo al frontend
   const filteredResponse = cleanAssistantMessage(assistantResponse);
