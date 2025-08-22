@@ -133,6 +133,10 @@ export interface SCJNSearchFilters {
   asunto?: string;
   ponente?: string;
   tipo?: string;
+  emisor?: string;
+  formasIntegracion?: string;
+  tipoAsunto?: string;
+  organoRadicacion?: string;
   fechaInicio?: string;
   fechaFin?: string;
   page?: number;
