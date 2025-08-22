@@ -9,6 +9,8 @@ const LibraryView: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [totalResults, setTotalResults] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
   const [warning, setWarning] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,6 +26,10 @@ const LibraryView: React.FC = () => {
     asunto: '',
     ponente: '',
     tipo: '',
+    emisor: '',
+    formasIntegracion: '',
+    tipoAsunto: '',
+    organoRadicacion: '',
     fechaInicio: '',
     fechaFin: '',
     page: 1,
@@ -87,6 +93,48 @@ const LibraryView: React.FC = () => {
     { value: 'Recurso de revisión', label: 'Recurso de revisión' }
   ];
 
+  const tipoVotoOptions = [
+    { value: 'Particular', label: 'Voto Particular' },
+    { value: 'Concurrente', label: 'Voto Concurrente' },
+    { value: 'Disidente', label: 'Voto Disidente' }
+  ];
+
+  const formasIntegracionOptions = [
+    { value: 'Jurisprudencia', label: 'Jurisprudencia' },
+    { value: 'Tesis Aislada', label: 'Tesis Aislada' },
+    { value: 'Criterio Relevante', label: 'Criterio Relevante' }
+  ];
+
+  // Función para obtener filtros dinámicos según la categoría
+  const getDynamicFilters = () => {
+    const { fuente, categoria } = filters;
+    
+    if (fuente === 'SJF') {
+      switch (categoria) {
+        case 'Tesis':
+          return ['epoca', 'año', 'instancia', 'organo', 'materia', 'asunto', 'ponente', 'tipo', 'formasIntegracion'];
+        case 'Precedente':
+          return ['epoca', 'año', 'instancia', 'organo', 'asunto'];
+        case 'Votos':
+          return ['epoca', 'instancia', 'organo', 'tipo', 'emisor'];
+        case 'Acuerdos':
+          return ['epoca', 'año', 'organo', 'instancia'];
+        default:
+          return ['epoca', 'año', 'instancia', 'organo', 'materia'];
+      }
+    } else if (fuente === 'SIJ') {
+      switch (categoria) {
+        case 'Sentencia':
+          return ['tipoAsunto', 'organoRadicacion', 'ponente', 'año'];
+        case 'Versiones':
+          return ['instancia', 'año'];
+        default:
+          return ['instancia', 'año'];
+      }
+    }
+    
+    return [];
+  };
   const handleFilterChange = (field: keyof SCJNSearchFilters, value: any) => {
     setFilters(prev => ({
       ...prev,
@@ -94,6 +142,7 @@ const LibraryView: React.FC = () => {
       // Reset página al cambiar filtros
       page: 1
     }));
+    setCurrentPage(1);
   };
 
   const handleFuenteChange = (fuente: 'SJF' | 'SIJ') => {
@@ -103,30 +152,46 @@ const LibraryView: React.FC = () => {
       categoria: fuente === 'SJF' ? 'Tesis' : 'Sentencia',
       page: 1
     }));
+    setCurrentPage(1);
   };
 
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    setFilters(prev => ({
+      ...prev,
+      page
+    }));
+  };
   const handleSearch = async () => {
     setLoading(true);
     setError(null);
     setWarning(null);
     
     try {
+      const searchFilters = {
+        ...filters,
+        page: currentPage
+      };
+      
       const response = await scjnAPI.search(filters);
       
       if (response.data.success) {
         setSearchResults(response.data.documents);
         setTotalResults(response.data.total);
+        setTotalPages(Math.ceil(response.data.total / (filters.limit || 20)));
         setWarning(response.data.warning);
       } else {
         setError(response.data.message || 'Error en la búsqueda');
         setSearchResults([]);
         setTotalResults(0);
+        setTotalPages(0);
       }
     } catch (error) {
       console.error('Search error:', error);
       setError('Error al conectar con la API de SCJN. Intenta nuevamente.');
       setSearchResults([]);
       setTotalResults(0);
+      setTotalPages(0);
     } finally {
       setLoading(false);
     }
@@ -181,6 +246,10 @@ const LibraryView: React.FC = () => {
       asunto: '',
       ponente: '',
       tipo: '',
+      emisor: '',
+      formasIntegracion: '',
+      tipoAsunto: '',
+      organoRadicacion: '',
       fechaInicio: '',
       fechaFin: '',
       page: 1,
@@ -188,6 +257,8 @@ const LibraryView: React.FC = () => {
     });
     setSearchResults([]);
     setTotalResults(0);
+    setTotalPages(0);
+    setCurrentPage(1);
     setWarning(null);
     setError(null);
   };
@@ -201,6 +272,66 @@ const LibraryView: React.FC = () => {
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: currentYear - 1950 + 1 }, (_, i) => currentYear - i);
 
+  const dynamicFilters = getDynamicFilters();
+
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    const maxVisiblePages = 5;
+    const startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    const pages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+
+    return (
+      <div className="flex items-center justify-center gap-2 mt-6">
+        <button
+          onClick={() => handlePageChange(1)}
+          disabled={currentPage === 1}
+          className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Primera
+        </button>
+        
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Anterior
+        </button>
+
+        {pages.map(page => (
+          <button
+            key={page}
+            onClick={() => handlePageChange(page)}
+            className={`px-3 py-2 text-sm border rounded-lg ${
+              page === currentPage
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            {page}
+          </button>
+        ))}
+
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Siguiente
+        </button>
+        
+        <button
+          onClick={() => handlePageChange(totalPages)}
+          disabled={currentPage === totalPages}
+          className="px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Última
+        </button>
+      </div>
+    );
+  };
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
@@ -282,108 +413,239 @@ const LibraryView: React.FC = () => {
                 <div className="mt-4 p-4 bg-gray-50 rounded-lg space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {/* Época */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Época
-                      </label>
-                      <select
-                        value={filters.epoca}
-                        onChange={(e) => handleFilterChange('epoca', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      >
-                        <option value="">Todas las épocas</option>
-                        {epocaOptions.map(option => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Año */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Año
-                      </label>
-                      <select
-                        value={filters.año || ''}
-                        onChange={(e) => handleFilterChange('año', e.target.value ? parseInt(e.target.value) : undefined)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      >
-                        <option value="">Todos los años</option>
-                        {yearOptions.map(year => (
-                          <option key={year} value={year}>
-                            {year}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Instancia */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Instancia
-                      </label>
-                      <select
-                        value={filters.instancia}
-                        onChange={(e) => handleFilterChange('instancia', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      >
-                        <option value="">Todas las instancias</option>
-                        {instanciaOptions.map(option => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Materia */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Materia
-                      </label>
-                      <select
-                        value={filters.materia}
-                        onChange={(e) => handleFilterChange('materia', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      >
-                        <option value="">Todas las materias</option>
-                        {materiaOptions.map(option => (
-                          <option key={option.value} value={option.value}>
-                            {option.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Ponente */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Ponente
-                      </label>
-                      <input
-                        type="text"
-                        value={filters.ponente}
-                        onChange={(e) => handleFilterChange('ponente', e.target.value)}
-                        placeholder="Nombre del ponente"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
-
-                    {/* Asunto */}
-                    {filters.fuente === 'SIJ' && filters.categoria === 'Sentencia' && (
+                    {dynamicFilters.includes('epoca') && (
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Tipo de asunto
+                          Época
                         </label>
                         <select
+                          value={filters.epoca}
+                          onChange={(e) => handleFilterChange('epoca', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="">Todas las épocas</option>
+                          {epocaOptions.map(option => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Año */}
+                    {dynamicFilters.includes('año') && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Año
+                        </label>
+                        <select
+                          value={filters.año || ''}
+                          onChange={(e) => handleFilterChange('año', e.target.value ? parseInt(e.target.value) : undefined)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="">Todos los años</option>
+                          {yearOptions.map(year => (
+                            <option key={year} value={year}>
+                              {year}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Instancia */}
+                    {dynamicFilters.includes('instancia') && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Instancia
+                        </label>
+                        <select
+                          value={filters.instancia}
+                          onChange={(e) => handleFilterChange('instancia', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="">Todas las instancias</option>
+                          {instanciaOptions.map(option => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Órgano */}
+                    {dynamicFilters.includes('organo') && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Órgano
+                        </label>
+                        <input
+                          type="text"
+                          value={filters.organo}
+                          onChange={(e) => handleFilterChange('organo', e.target.value)}
+                          placeholder="Nombre del órgano"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                    )}
+
+                    {/* Materia */}
+                    {dynamicFilters.includes('materia') && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Materia
+                        </label>
+                        <select
+                          value={filters.materia}
+                          onChange={(e) => handleFilterChange('materia', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="">Todas las materias</option>
+                          {materiaOptions.map(option => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Asunto */}
+                    {dynamicFilters.includes('asunto') && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Asunto
+                        </label>
+                        <input
+                          type="text"
                           value={filters.asunto}
                           onChange={(e) => handleFilterChange('asunto', e.target.value)}
+                          placeholder="Descripción del asunto"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                    )}
+
+                    {/* Ponente */}
+                    {dynamicFilters.includes('ponente') && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Ponente
+                        </label>
+                        <input
+                          type="text"
+                          value={filters.ponente}
+                          onChange={(e) => handleFilterChange('ponente', e.target.value)}
+                          placeholder="Nombre del ponente"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                    )}
+
+                    {/* Tipo */}
+                    {dynamicFilters.includes('tipo') && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          {filters.categoria === 'Votos' ? 'Tipo de Voto' : 'Tipo'}
+                        </label>
+                        {filters.categoria === 'Votos' ? (
+                          <select
+                            value={filters.tipo}
+                            onChange={(e) => handleFilterChange('tipo', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          >
+                            <option value="">Todos los tipos</option>
+                            {tipoVotoOptions.map(option => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            type="text"
+                            value={filters.tipo}
+                            onChange={(e) => handleFilterChange('tipo', e.target.value)}
+                            placeholder="Tipo de documento"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        )}
+                      </div>
+                    )}
+
+                    {/* Emisor (para Votos) */}
+                    {dynamicFilters.includes('emisor') && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Emisor
+                        </label>
+                        <input
+                          type="text"
+                          value={filters.emisor}
+                          onChange={(e) => handleFilterChange('emisor', e.target.value)}
+                          placeholder="Nombre del emisor"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        />
+                      </div>
+                    )}
+
+                    {/* Formas de Integración (para Tesis) */}
+                    {dynamicFilters.includes('formasIntegracion') && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Formas de Integración
+                        </label>
+                        <select
+                          value={filters.formasIntegracion}
+                          onChange={(e) => handleFilterChange('formasIntegracion', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="">Todas las formas</option>
+                          {formasIntegracionOptions.map(option => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Tipo de Asunto (para SIJ Sentencia) */}
+                    {dynamicFilters.includes('tipoAsunto') && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Tipo de Asunto
+                        </label>
+                        <select
+                          value={filters.tipoAsunto}
+                          onChange={(e) => handleFilterChange('tipoAsunto', e.target.value)}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         >
                           <option value="">Todos los asuntos</option>
                           {tipoAsuntoOptions.map(option => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    {/* Órgano de Radicación (para SIJ Sentencia) */}
+                    {dynamicFilters.includes('organoRadicacion') && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Órgano de Radicación
+                        </label>
+                        <select
+                          value={filters.organoRadicacion}
+                          onChange={(e) => handleFilterChange('organoRadicacion', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        >
+                          <option value="">Todos los órganos</option>
+                          {instanciaOptions.map(option => (
                             <option key={option.value} value={option.value}>
                               {option.label}
                             </option>
@@ -493,7 +755,7 @@ const LibraryView: React.FC = () => {
                   Resultados de búsqueda
                 </h3>
                 <div className="text-sm text-gray-600">
-                  {totalResults.toLocaleString()} documentos encontrados
+                  {totalResults.toLocaleString()} documentos encontrados - Página {currentPage} de {totalPages}
                 </div>
               </div>
             </div>
@@ -570,6 +832,9 @@ const LibraryView: React.FC = () => {
                 </tbody>
               </table>
             </div>
+
+            {/* Paginación */}
+            {renderPagination()}
           </div>
         )}
 
