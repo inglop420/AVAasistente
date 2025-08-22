@@ -28,35 +28,37 @@ function extractDeepestValue(obj: any): string {
   }
   return '';
 }
-// Limpiar la respuesta del asistente
+// Limpia la respuesta del asistente, ocultando todo desde "Internamente" y el bloque JSON, incluyendo texto explicativo posterior
 function cleanAssistantMessage(message: string): string {
-  const internStart = message.indexOf('(Internamente)');
+  const internStart = message.indexOf('Internamente');
   if (internStart !== -1) {
-    // Busca el final del bloque JSON (después de "}")
-    const jsonEnd = message.indexOf('}', internStart);
-    if (jsonEnd !== -1) {
-      // Mantén solo el texto antes de "(Internamente)" y después del bloque JSON
-      const before = message.slice(0, internStart).trim();
-      const after = message.slice(jsonEnd + 1).trim();
-      // Si hay texto después del JSON, lo conservamos
-      return [before, after].filter(Boolean).join(' ').trim();
+    // Busca el primer bloque JSON después de "Internamente"
+    const afterIntern = message.slice(internStart);
+    const jsonRegex = /{[\s\S]*?}/;
+    const match = afterIntern.match(jsonRegex);
+    let jsonEnd = -1;
+    if (match && match.index !== undefined) {
+      jsonEnd = internStart + match.index + match[0].length;
     }
-    // Si no encuentra el cierre, elimina desde "(Internamente)" en adelante
+    // Elimina todo desde "Internamente" en adelante
     return message.slice(0, internStart).trim();
   }
   return message;
 }
-// Extraer el JSON interno
+
+// Extrae el primer bloque JSON después de "Internamente", tolerando saltos de línea y texto explicativo
 function extractInternalJson(message: string): any | null {
-  const regex = /\(Internamente\)[\s\n]*({[\s\S]*?})/;
-  const match = message.match(regex);
-  let jsonString = match && match[1] ? match[1].trim() : null;
+  const internIndex = message.indexOf('Internamente');
+  if (internIndex === -1) return null;
 
-  if (jsonString) {
-    // Elimina saltos de línea innecesarios
-    jsonString = jsonString.replace(/\n/g, ' ').replace(/\s+/g, ' ');
-
-    // Intenta parsear el JSON
+  // Busca el primer bloque JSON después de "Internamente"
+  const afterIntern = message.slice(internIndex);
+  const jsonRegex = /{[\s\S]*?}/;
+  const match = afterIntern.match(jsonRegex);
+  if (match && match[0]) {
+    let jsonString = match[0];
+    // Elimina saltos de línea y espacios extra
+    jsonString = jsonString.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
     try {
       return JSON.parse(jsonString);
     } catch (e) {
@@ -71,7 +73,7 @@ function extractInternalJson(message: string): any | null {
       try {
         return JSON.parse(fixedJson);
       } catch (e2) {
-        console.error('Error al parsear JSON interno (corregido):', e2);
+        console.error('Error al parsear JSON interno (corregido):', e2, fixedJson);
         return null;
       }
     }
@@ -158,6 +160,24 @@ if (internalData?.action === 'createClient' && internalData?.data) {
       clientData.email = clientData.mail;
       delete clientData.mail;
     }
+    
+    // Validación de campos requeridos
+  const requiredFields = [
+    { key: 'name', label: 'nombre' },
+    { key: 'email', label: 'correo electrónico' },
+    { key: 'phone', label: 'teléfono' }
+  ];
+  const missing = requiredFields.filter(f => !clientData[f.key] || clientData[f.key].trim() === '');
+
+  if (missing.length > 0) {
+    // Pide el dato faltante en el chat
+    return res.status(200).json({
+      success: false,
+      response: `Por favor, proporciona tu ${missing[0].label}.`,
+      timestamp: new Date().toISOString()
+    });
+  }
+    
     console.log('Datos recibidos para crear cliente:', clientData, req.user.tenantId);
     const client = await createClientFromData(clientData, req.user.tenantId);
     res.status(201).json({

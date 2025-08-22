@@ -85,19 +85,22 @@ export const deleteClient = async (req: AuthRequest, res: Response) => {
 };
 
 export const createClientFromData = async (data: { name: string; email: string; phone: string }, tenantId: string) => {
+ console.log('Intentando crear cliente:', data, tenantId);
   try {
     const { name, email, phone } = data;
 
     // Check if client already exists in this tenant
+    console.log('Buscando cliente existente con email:', email, 'y tenantId:', tenantId);
     const existingClient = await Client.findOne({ 
       email, 
       tenantId
     });
     
     if (existingClient) {
+      console.log('Cliente ya existe:', existingClient);
       throw new Error('El cliente ya existe');
     }
-
+    console.log('Creando nuevo cliente...');
     const client = new Client({
       name,
       email,
@@ -105,8 +108,9 @@ export const createClientFromData = async (data: { name: string; email: string; 
       tenantId,
       expedientesCount: 0
     });
-
+    console.log('Guardando cliente en la base de datos...');
     await client.save();
+    console.log('Cliente guardado exitosamente:', client);
     return client;
   } catch (error) {
     console.error('Create client error:', error);

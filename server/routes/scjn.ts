@@ -2,7 +2,6 @@ import express from 'express';
 import { 
   searchDocuments, 
   getDocumentDetail, 
-  getDocumentCount,
   downloadResults 
 } from '../controllers/scjnController';
 import { authenticateToken, requirePermission } from '../middleware/auth';
@@ -18,7 +17,7 @@ router.get('/search', requirePermission('read', 'library'), searchDocuments);
 router.get('/document/:type/:id', requirePermission('read', 'library'), getDocumentDetail);
 
 // Obtener conteo de documentos
-router.get('/count', requirePermission('read', 'library'), getDocumentCount);
+//router.get('/count', requirePermission('read', 'library'), getDocumentCount);
 
 // Descargar resultados en CSV
 router.post('/download', requirePermission('read', 'library'), downloadResults);
