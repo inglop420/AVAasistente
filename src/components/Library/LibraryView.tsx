@@ -173,12 +173,12 @@ const LibraryView: React.FC = () => {
         page: currentPage
       };
       
-      const response = await scjnAPI.search(filters);
+      const response = await scjnAPI.search(searchFilters);
       
       if (response.data.success) {
         setSearchResults(response.data.documents);
         setTotalResults(response.data.total);
-        setTotalPages(Math.ceil(response.data.total / (filters.limit || 20)));
+        setTotalPages(Math.ceil(response.data.total / (searchFilters.limit || 20)));
         setWarning(response.data.warning);
       } else {
         setError(response.data.message || 'Error en la búsqueda');
