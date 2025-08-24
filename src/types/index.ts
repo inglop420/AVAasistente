@@ -51,6 +51,22 @@ export interface Appointment {
 
 export interface Document {
   _id: string;
+  id: string;
+  name: string;
+  originalName: string;
+  type: string;
+  category: 'document' | 'template';
+  url: string;
+  size: number;
+  expedienteId?: string;
+  expedienteTitle?: string;
+  uploadedBy: string;
+  uploadedAt: string;
+  createdAt: string;
+}
+
+export interface DocumentOld {
+  _id: string;
   title: string;
   url: string;
   expedienteId: string;

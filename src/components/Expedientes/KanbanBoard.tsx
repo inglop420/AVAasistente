@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useEffect } from 'react';
 import { Plus, Edit, Trash2, Eye, FileText, Calendar, User, Building, FolderPlus, CheckSquare } from 'lucide-react';
 import { Expediente } from '../../types';
-import { expedientesAPI } from '../../services/api';
+import { expedientesAPI, documentsAPI } from '../../services/api';
 import ExpedienteModal from './ExpedienteModal';
 import MovementsView from './MovementsView';
 import TasksView from './TasksView';
@@ -10,6 +10,7 @@ import { usePermissions } from '../../hooks/usePermissions';
 
 const ExpedientesTable: React.FC = () => {
   const [expedientes, setExpedientes] = useState<Expediente[]>([]);
+  const [documentCounts, setDocumentCounts] = useState<Record<string, number>>({});
   const [showModal, setShowModal] = useState(false);
   const [selectedExpediente, setSelectedExpediente] = useState<Expediente | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -23,6 +24,7 @@ const ExpedientesTable: React.FC = () => {
 
   useEffect(() => {
     fetchExpedientes();
+    fetchDocumentCounts();
   }, []);
 
   const fetchExpedientes = async () => {
@@ -33,6 +35,23 @@ const ExpedientesTable: React.FC = () => {
       console.error('Error fetching expedientes:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDocumentCounts = async () => {
+    try {
+      const response = await documentsAPI.getByCategory('document');
+      const counts: Record<string, number> = {};
+      
+      response.data.forEach((doc: any) => {
+        if (doc.expedienteId) {
+          counts[doc.expedienteId] = (counts[doc.expedienteId] || 0) + 1;
+        }
+      });
+      
+      setDocumentCounts(counts);
+    } catch (error) {
+      console.error('Error fetching document counts:', error);
     }
   };
 
@@ -233,6 +252,9 @@ const ExpedientesTable: React.FC = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Fecha Creación
                     </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Documentos
+                    </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Acciones
                     </th>
@@ -274,6 +296,14 @@ const ExpedientesTable: React.FC = () => {
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Calendar className="w-4 h-4" />
                           <span>{new Date(expediente.createdAt).toLocaleDateString('es-ES')}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <FileText className="w-4 h-4 text-gray-400" />
+                          <span className="text-sm text-gray-900">
+                            {documentCounts[expediente.id] || 0}
+                          </span>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

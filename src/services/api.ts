@@ -67,7 +67,14 @@ export const appointmentsAPI = {
 // Documents API
 export const documentsAPI = {
   getAll: () => api.get('/documents'),
-  create: (documentData: any) => api.post('/documents', documentData),
+  getByCategory: (category: string) => api.get(`/documents?category=${category}`),
+  getByExpediente: (expedienteId: string) => api.get(`/documents/expediente/${expedienteId}`),
+  upload: (formData: FormData) => api.post('/documents/upload', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
+  download: (id: string) => api.get(`/documents/download/${id}`, { responseType: 'blob' }),
   delete: (id: string) => api.delete(`/documents/${id}`),
 };
 
