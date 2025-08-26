@@ -75,6 +75,7 @@ export const documentsAPI = {
     },
   }),
   download: (id: string) => api.get(`/documents/download/${id}`, { responseType: 'blob' }),
+  view: (id: string) => api.get(`/documents/view/${id}`, { responseType: 'blob' }),
   delete: (id: string) => api.delete(`/documents/${id}`),
 };
 

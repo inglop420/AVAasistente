@@ -187,11 +187,32 @@ export const downloadDocument = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ message: 'Archivo no encontrado en el servidor' });
     }
 
-    res.download(filePath, document.originalName);
+    // Set appropriate headers for viewing in browser
+    const contentType = getContentType(document.type);
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `inline; filename="${document.originalName}"`);
+    
+    // Send file for viewing
+    res.sendFile(filePath);
   } catch (error) {
     console.error('Download document error:', error);
     res.status(500).json({ message: 'Error al descargar documento' });
   }
+};
+
+// Helper function to get content type
+const getContentType = (fileType: string): string => {
+  const contentTypes: Record<string, string> = {
+    'pdf': 'application/pdf',
+    'jpg': 'image/jpeg',
+    'jpeg': 'image/jpeg',
+    'png': 'image/png',
+    'gif': 'image/gif',
+    'txt': 'text/plain',
+    'doc': 'application/msword',
+    'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  };
+  return contentTypes[fileType.toLowerCase()] || 'application/octet-stream';
 };
 
 export const deleteDocument = async (req: AuthRequest, res: Response) => {

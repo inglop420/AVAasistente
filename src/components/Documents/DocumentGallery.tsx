@@ -5,6 +5,7 @@ import { documentsAPI, expedientesAPI } from '../../services/api';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useAuth } from '../../contexts/AuthContext';
 import DocumentUploadModal from './DocumentUploadModal';
+import DocumentViewer from './DocumentViewer';
 
 const DocumentGallery: React.FC = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
@@ -16,6 +17,7 @@ const DocumentGallery: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const permissions = usePermissions();
   const { user } = useAuth();
 
@@ -76,6 +78,10 @@ const DocumentGallery: React.FC = () => {
   const handleUploadSuccess = (newDocument: Document) => {
     setDocuments(prev => [newDocument, ...prev]);
     setShowUploadModal(false);
+  };
+
+  const handleViewDocument = (doc: Document) => {
+    setSelectedDocument(doc);
   };
 
   const handleDownloadDocument = async (doc: Document) => {
@@ -311,6 +317,13 @@ const DocumentGallery: React.FC = () => {
 
                 <div className="flex items-center justify-center gap-2">
                   <button
+                    onClick={() => handleViewDocument(document)}
+                    className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                    title="Ver documento"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  <button
                     onClick={() => handleDownloadDocument(document)}
                     className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors duration-200"
                     title="Descargar"
@@ -366,6 +379,14 @@ const DocumentGallery: React.FC = () => {
             expedientes={expedientes}
             onSuccess={handleUploadSuccess}
             onClose={() => setShowUploadModal(false)}
+          />
+        )}
+
+        {/* Document Viewer */}
+        {selectedDocument && (
+          <DocumentViewer
+            document={selectedDocument}
+            onClose={() => setSelectedDocument(null)}
           />
         )}
       </div>
