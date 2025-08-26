@@ -3,9 +3,10 @@ import { X, Download, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw, File
 import { Document as PDFDocument, Page, pdfjs } from 'react-pdf';
 import { Document } from '../../types';
 import { documentsAPI } from '../../services/api';
+import workerSrc from "pdfjs-dist/build/pdf.worker.min.js?url";
 
 // Configure PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
 interface DocumentViewerProps {
   document: Document;
@@ -73,12 +74,12 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ document, onClose }) =>
       const response = await documentsAPI.download(document.id);
       const blob = new Blob([response.data]);
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = window.document.createElement('a');
       link.href = url;
       link.download = document.originalName;
-      document.body.appendChild(link);
+      window.document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
+      window.document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Error downloading document:', error);

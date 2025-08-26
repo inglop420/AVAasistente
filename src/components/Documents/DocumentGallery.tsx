@@ -6,6 +6,10 @@ import { usePermissions } from '../../hooks/usePermissions';
 import { useAuth } from '../../contexts/AuthContext';
 import DocumentUploadModal from './DocumentUploadModal';
 import DocumentViewer from './DocumentViewer';
+import { Eye } from "lucide-react";
+import { pdfjs } from "react-pdf";
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+
 
 const DocumentGallery: React.FC = () => {
   const [documents, setDocuments] = useState<Document[]>([]);

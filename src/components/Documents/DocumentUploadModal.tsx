@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { X, Upload, FileText, AlertCircle } from 'lucide-react';
+import { X, Upload, AlertCircle } from 'lucide-react';
 import { Document, Expediente } from '../../types';
 import { documentsAPI } from '../../services/api';
 
