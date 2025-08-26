@@ -23,6 +23,9 @@ router.post('/upload', requirePermission('create', 'documents'), upload.single('
 // Download document
 router.get('/download/:id', requirePermission('read', 'documents'), downloadDocument);
 
+// View document (same as download but with inline content-disposition)
+router.get('/view/:id', requirePermission('read', 'documents'), downloadDocument);
+
 // Delete document
 router.delete('/:id', requirePermission('delete', 'documents'), deleteDocument);
 
