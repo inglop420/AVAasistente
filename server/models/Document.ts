@@ -1,6 +1,22 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document as MongooseDocument, Schema } from 'mongoose';
 
-export interface IDocument extends Document {
+export interface IDocument extends MongooseDocument {
+  name: string;
+  originalName: string;
+  type: string;
+  category: 'document' | 'template';
+  url: string;
+  size: number;
+  expedienteId?: string;
+  expedienteTitle?: string;
+  tenantId: string;
+  uploadedBy: string;
+  uploadedAt: Date;
+  createdAt: Date;
+}
+
+export interface IDocumentPlain {
+  _id: any;
   name: string;
   originalName: string;
   type: string;

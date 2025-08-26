@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Upload, FileText, Download, Eye, Trash2, Search, Filter, FolderOpen, File, Plus } from 'lucide-react';
+import { Upload, FileText, Download, Trash2, Search, Filter, FolderOpen, File, Plus } from 'lucide-react';
 import { Document, Expediente } from '../../types';
 import { documentsAPI, expedientesAPI } from '../../services/api';
 import { usePermissions } from '../../hooks/usePermissions';
@@ -45,11 +45,19 @@ const DocumentGallery: React.FC = () => {
   };
 
   const filteredDocuments = documents.filter(doc => {
-    const matchesSearch = doc.originalName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesType = filterType === 'all' || doc.type.toLowerCase() === filterType.toLowerCase();
-    const matchesExpediente = filterExpediente === 'all' || doc.expedienteId === filterExpediente;
-    return matchesSearch && matchesType && matchesExpediente;
-  });
+  const matchesSearch =
+    doc.originalName &&
+    doc.originalName.toLowerCase().includes(searchTerm.toLowerCase());
+
+  const matchesType =
+    filterType === 'all' ||
+    (doc.type && doc.type.toLowerCase() === filterType.toLowerCase());
+
+  const matchesExpediente =
+    filterExpediente === 'all' || doc.expedienteId === filterExpediente;
+
+  return matchesSearch && matchesType && matchesExpediente;
+});
 
   const documentTypes = ['all', 'pdf', 'docx', 'doc', 'jpg', 'jpeg', 'png', 'gif', 'txt'];
 

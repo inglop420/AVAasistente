@@ -2,9 +2,10 @@ import { Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import Document from '../models/Document';
+import Document, { IDocument, IDocumentPlain } from '../models/Document';
 import Expediente from '../models/Expediente';
 import { AuthRequest } from '../middleware/auth';
+import mongoose, { mongo } from 'mongoose';
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -60,9 +61,9 @@ export const getDocuments = async (req: AuthRequest, res: Response) => {
     if (expedienteId) {
       query.expedienteId = expedienteId;
     }
-    
-    const documents = await Document.find(query).sort({ createdAt: -1 });
-    
+
+    const documents = await Document.find(query).sort({ createdAt: -1 }).lean<IDocumentPlain[]>();
+
     // Transform documents to match frontend interface
     const documentsResponse = documents.map(doc => ({
       _id: doc._id.toString(),
@@ -137,8 +138,8 @@ export const uploadDocument = async (req: AuthRequest, res: Response) => {
     
     // Return document with proper format
     const documentResponse = {
-      _id: document._id.toString(),
-      id: document._id.toString(),
+      _id: (document._id as mongoose.Types.ObjectId).toString(),
+      id: (document._id as mongoose.Types.ObjectId).toString(),
       name: document.originalName,
       originalName: document.originalName,
       type: document.type,
@@ -175,7 +176,7 @@ export const downloadDocument = async (req: AuthRequest, res: Response) => {
     const document = await Document.findOne({
       _id: id,
       tenantId: req.user!.tenantId
-    });
+    })as IDocument | null; 
 
     if (!document) {
       return res.status(404).json({ message: 'Documento no encontrado' });
@@ -246,7 +247,7 @@ export const getDocumentsByExpediente = async (req: AuthRequest, res: Response) 
       expedienteId,
       tenantId: req.user!.tenantId,
       category: 'document'
-    }).sort({ createdAt: -1 });
+    }).sort({ createdAt: -1 }).lean<IDocumentPlain[]>();
     
     // Transform documents to match frontend interface
     const documentsResponse = documents.map(doc => ({

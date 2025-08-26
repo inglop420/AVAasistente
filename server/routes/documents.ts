@@ -9,6 +9,7 @@ import {
 } from '../controllers/documentController';
 import { authenticateToken, requirePermission } from '../middleware/auth';
 
+
 const router = express.Router();
 
 router.use(authenticateToken);
