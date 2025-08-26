@@ -3,10 +3,10 @@ import { X, Download, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw, File
 import { Document as PDFDocument, Page, pdfjs } from 'react-pdf';
 import { Document } from '../../types';
 import { documentsAPI } from '../../services/api';
-import workerSrc from "pdfjs-dist/build/pdf.worker.min.js?url";
+
 
 // Configure PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
+pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
 interface DocumentViewerProps {
   document: Document;
