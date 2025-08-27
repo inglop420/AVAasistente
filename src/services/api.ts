@@ -35,99 +35,99 @@ api.interceptors.response.use(
 // Auth API
 export const authAPI = {
   login: (email: string, password: string) =>
-    api.post('/auth/login', { email, password }),
+    api.post('/api/auth/login', { email, password }),
   register: (userData: any) =>
-    api.post('/auth/register', userData),
+    api.post('/api/auth/register', userData),
 };
 
 // Clients API
 export const clientsAPI = {
-  getAll: () => api.get('/clients'),
-  create: (clientData: any) => api.post('/clients', clientData),
-  update: (id: string, clientData: any) => api.put(`/clients/${id}`, clientData),
-  delete: (id: string) => api.delete(`/clients/${id}`),
+  getAll: () => api.get('/api/clients'),
+  create: (clientData: any) => api.post('/api/clients', clientData),
+  update: (id: string, clientData: any) => api.put(`/api/clients/${id}`, clientData),
+  delete: (id: string) => api.delete(`/api/clients/${id}`),
 };
 
 // Expedientes API
 export const expedientesAPI = {
-  getAll: () => api.get('/expedientes'),
-  create: (expedienteData: any) => api.post('/expedientes', expedienteData),
-  update: (id: string, expedienteData: any) => api.put(`/expedientes/${id}`, expedienteData),
-  delete: (id: string) => api.delete(`/expedientes/${id}`),
+  getAll: () => api.get('/api/expedientes'),
+  create: (expedienteData: any) => api.post('/api/expedientes', expedienteData),
+  update: (id: string, expedienteData: any) => api.put(`/api/expedientes/${id}`, expedienteData),
+  delete: (id: string) => api.delete(`/api/expedientes/${id}`),
 };
 
 // Appointments API
 export const appointmentsAPI = {
-  getAll: () => api.get('/appointments'),
-  create: (appointmentData: any) => api.post('/appointments', appointmentData),
-  update: (id: string, appointmentData: any) => api.put(`/appointments/${id}`, appointmentData),
-  delete: (id: string) => api.delete(`/appointments/${id}`),
+  getAll: () => api.get('/api/appointments'),
+  create: (appointmentData: any) => api.post('/api/appointments', appointmentData),
+  update: (id: string, appointmentData: any) => api.put(`/api/appointments/${id}`, appointmentData),
+  delete: (id: string) => api.delete(`/api/appointments/${id}`),
 };
 
 // Documents API
 export const documentsAPI = {
-  getAll: () => api.get('/documents'),
-  getByCategory: (category: string) => api.get(`/documents?category=${category}`),
-  getByExpediente: (expedienteId: string) => api.get(`/documents/expediente/${expedienteId}`),
-  upload: (formData: FormData) => api.post('/documents/upload', formData, {
+  getAll: () => api.get('/api/documents'),
+  getByCategory: (category: string) => api.get(`/api/documents?category=${category}`),
+  getByExpediente: (expedienteId: string) => api.get(`/api/documents/expediente/${expedienteId}`),
+  upload: (formData: FormData) => api.post('/api/documents/upload', formData, {
     headers: {
       'Content-Type': 'multipart/form-data',
     },
   }),
-  download: (id: string) => api.get(`/documents/download/${id}`, { responseType: 'blob' }),
-  view: (id: string) => api.get(`/documents/view/${id}`, { responseType: 'blob' }),
-  delete: (id: string) => api.delete(`/documents/${id}`),
+  download: (id: string) => api.get(`/api/documents/download/${id}`, { responseType: 'blob' }),
+  view: (id: string) => api.get(`/api/documents/view/${id}`, { responseType: 'blob' }),
+  delete: (id: string) => api.delete(`/api/documents/${id}`),
 };
 
 // Library API
 export const libraryAPI = {
-  getAll: () => api.get('/library'),
-  create: (itemData: any) => api.post('/library', itemData),
+  getAll: () => api.get('/api/library'),
+  create: (itemData: any) => api.post('/api/library', itemData),
 };
 
 // Admin API
 export const adminAPI = {
   // Organizations
-  getOrganizations: () => api.get('/admin/organizations'),
-  createOrganization: (orgData: any) => api.post('/admin/organizations', orgData),
-  updateOrganization: (id: string, orgData: any) => api.put(`/admin/organizations/${id}`, orgData),
-  deleteOrganization: (id: string) => api.delete(`/admin/organizations/${id}`),
-  
+  getOrganizations: () => api.get('/api/admin/organizations'),
+  createOrganization: (orgData: any) => api.post('/api/admin/organizations', orgData),
+  updateOrganization: (id: string, orgData: any) => api.put(`/api/admin/organizations/${id}`, orgData),
+  deleteOrganization: (id: string) => api.delete(`/api/admin/organizations/${id}`),
+
   // Users
-  getUsers: () => api.get('/admin/users'),
-  createUser: (userData: any) => api.post('/admin/users', userData),
-  updateUser: (id: string, userData: any) => api.put(`/admin/users/${id}`, userData),
-  deleteUser: (id: string) => api.delete(`/admin/users/${id}`),
+  getUsers: () => api.get('/api/admin/users'),
+  createUser: (userData: any) => api.post('/api/admin/users', userData),
+  updateUser: (id: string, userData: any) => api.put(`/api/admin/users/${id}`, userData),
+  deleteUser: (id: string) => api.delete(`/api/admin/users/${id}`),
 };
 
 // Chat API
 export const chatAPI = {
-  sendMessage: (message: string) => api.post('/chat/message', { message }),
+  sendMessage: (message: string) => api.post('/api/chat/message', { message }),
 };
 
 // Movements API
 export const movementsAPI = {
-  getAll: (expedienteId: string) => api.get(`/expedientes/${expedienteId}/movements`),
-  create: (expedienteId: string, movementData: any) => api.post(`/expedientes/${expedienteId}/movements`, movementData),
-  update: (expedienteId: string, movementId: string, movementData: any) => api.put(`/expedientes/${expedienteId}/movements/${movementId}`, movementData),
-  delete: (expedienteId: string, movementId: string) => api.delete(`/expedientes/${expedienteId}/movements/${movementId}`),
+  getAll: (expedienteId: string) => api.get(`/api/expedientes/${expedienteId}/movements`),
+  create: (expedienteId: string, movementData: any) => api.post(`/api/expedientes/${expedienteId}/movements`, movementData),
+  update: (expedienteId: string, movementId: string, movementData: any) => api.put(`/api/expedientes/${expedienteId}/movements/${movementId}`, movementData),
+  delete: (expedienteId: string, movementId: string) => api.delete(`/api/expedientes/${expedienteId}/movements/${movementId}`),
 };
 
 // Tasks API
 export const tasksAPI = {
-  getAll: (expedienteId: string) => api.get(`/expedientes/${expedienteId}/tasks`),
-  getAllTasks: () => api.get('/expedientes/tasks/all'),
-  create: (expedienteId: string, taskData: any) => api.post(`/expedientes/${expedienteId}/tasks`, taskData),
-  update: (expedienteId: string, taskId: string, taskData: any) => api.put(`/expedientes/${expedienteId}/tasks/${taskId}`, taskData),
-  delete: (expedienteId: string, taskId: string) => api.delete(`/expedientes/${expedienteId}/tasks/${taskId}`),
+  getAll: (expedienteId: string) => api.get(`/api/expedientes/${expedienteId}/tasks`),
+  getAllTasks: () => api.get('/api/expedientes/tasks/all'),
+  create: (expedienteId: string, taskData: any) => api.post(`/api/expedientes/${expedienteId}/tasks`, taskData),
+  update: (expedienteId: string, taskId: string, taskData: any) => api.put(`/api/expedientes/${expedienteId}/tasks/${taskId}`, taskData),
+  delete: (expedienteId: string, taskId: string) => api.delete(`/api/expedientes/${expedienteId}/tasks/${taskId}`),
 };
 
 // SCJN API
 export const scjnAPI = {
-  search: (filters: any) => api.get('/scjn/search', { params: filters }),
-  getDocumentDetail: (type: string, id: string) => api.get(`/scjn/document/${type}/${id}`),
-  //getCount: (filters: any) => api.get('/scjn/count', { params: filters }),
-  downloadResults: (documents: any[]) => api.post('/scjn/download', { documents }, { responseType: 'blob' }),
+  search: (filters: any) => api.get('/api/scjn/search', { params: filters }),
+  getDocumentDetail: (type: string, id: string) => api.get(`/api/scjn/document/${type}/${id}`),
+  //getCount: (filters: any) => api.get('/api/scjn/count', { params: filters }),
+  downloadResults: (documents: any[]) => api.post('/api/scjn/download', { documents }, { responseType: 'blob' }),
 };
 
 export default api;
