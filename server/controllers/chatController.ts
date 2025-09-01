@@ -129,7 +129,7 @@ export const sendChatMessage = async (req: AuthRequest, res: Response) => {
     });
 
     // Log para depuración
-    console.log('Respuesta completa de n8n:', n8nResponse.data);
+    console.log('Respuesta completa de n8n:', JSON.stringify(n8nResponse.data, null, 2));
 
     // Extraer la respuesta de n8n
     //const assistantResponse = n8nResponse.data?.output || 'Lo siento, no pude procesar tu consulta en este momento.';
