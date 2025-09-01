@@ -109,7 +109,7 @@ export const sendChatMessage = async (req: AuthRequest, res: Response) => {
 
     // Preparar datos para enviar a n8n
     const payload = {
-      message: message.trim(),
+      chatInput: message.trim(),
       user: {
         id: user?.id,
        // name: user?.name,
