@@ -10,10 +10,11 @@ import Expediente from '../models/Expediente';
 
 
 function findAssistantMessage(obj: any): string | null {
+  // 1. Busca string con "internamente" y JSON en claves y valores
   if (!obj) return null;
   if (typeof obj === 'string') {
     if (obj.includes('internamente') && obj.includes('{')) return obj;
-    return null;
+    return obj;
   }
   if (Array.isArray(obj)) {
     for (const item of obj) {
@@ -28,31 +29,14 @@ function findAssistantMessage(obj: any): string | null {
       // Busca en valores
       const found = findAssistantMessage(obj[key]);
       if (found) return found;
+      // Busca campo output
+      if (key === 'output' && typeof obj[key] === 'string') return obj[key];
     }
   }
   return null;
 }
 
-// Agrega la función aquí, antes de export const sendChatMessage...
-function extractDeepestValue(obj: any): string {
-  if (typeof obj === 'string') return obj;
-  if (Array.isArray(obj)) {
-    for (const item of obj) {
-      const val = extractDeepestValue(item);
-      if (val) return val;
-    }
-    return '';
-  }
-  if (typeof obj === 'object' && obj !== null) {
-    const keys = Object.keys(obj);
-    for (const key of keys) {
-      const val = extractDeepestValue(obj[key]);
-      if (val) return val;
-    }
-    return '';
-  }
-  return '';
-}
+
 // Limpia la respuesta del asistente, ocultando todo desde "Internamente" y el bloque JSON, incluyendo texto explicativo posterior
 function cleanAssistantMessage(message: string): string {
   const internStart = message.indexOf('Internamente');
@@ -162,7 +146,6 @@ export const sendChatMessage = async (req: AuthRequest, res: Response) => {
   const assistantResponse =
   n8nResponse.data?.output ||
   findAssistantMessage(n8nResponse.data) ||
-  extractDeepestValue(n8nResponse.data) ||
   n8nResponse.data?.message ||
   'Lo siento, no pude procesar tu consulta en este momento.';
 
