@@ -51,18 +51,27 @@ function cleanAssistantMessage(message: string): string {
 
 //Función para extraer el texto explicativo después del JSON
 function getExplanationAfterJson(message: string): string {
-  const internStart = message.indexOf('Internamente');
-  if (internStart === -1) return message;
-  // Busca el primer bloque JSON después de "Internamente"
-  const afterIntern = message.slice(internStart);
-  const jsonRegex = /{[\s\S]*?}/;
-  const match = afterIntern.match(jsonRegex);
-  if (match && match.index !== undefined) {
-    const jsonEnd = internStart + match.index + match[0].length;
-    // Devuelve el texto después del JSON
-    return message.slice(jsonEnd).trim();
+  const internIndex = message.toLowerCase().indexOf('internamente');
+  if (internIndex === -1) return message;
+  // Busca la primera llave después de "internamente"
+  const firstBrace = message.indexOf('{', internIndex);
+  if (firstBrace === -1) return '';
+  // Busca la última llave que cierra el bloque JSON
+  let braceCount = 0;
+  let lastBrace = -1;
+  for (let i = firstBrace; i < message.length; i++) {
+    if (message[i] === '{') braceCount++;
+    if (message[i] === '}') {
+      braceCount--;
+      if (braceCount === 0) {
+        lastBrace = i;
+        break;
+      }
+    }
   }
-  return '';
+  if (lastBrace === -1) return '';
+  // Devuelve el texto después del bloque JSON
+  return message.slice(lastBrace + 1).trim();
 }
 
 // Extrae el primer bloque JSON después de "Internamente", tolerando saltos de línea y texto explicativo
