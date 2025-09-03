@@ -49,6 +49,22 @@ function cleanAssistantMessage(message: string): string {
   return message;
 }
 
+//Función para extraer el texto explicativo después del JSON
+function getExplanationAfterJson(message: string): string {
+  const internStart = message.indexOf('Internamente');
+  if (internStart === -1) return message;
+  // Busca el primer bloque JSON después de "Internamente"
+  const afterIntern = message.slice(internStart);
+  const jsonRegex = /{[\s\S]*?}/;
+  const match = afterIntern.match(jsonRegex);
+  if (match && match.index !== undefined) {
+    const jsonEnd = internStart + match.index + match[0].length;
+    // Devuelve el texto después del JSON
+    return message.slice(jsonEnd).trim();
+  }
+  return '';
+}
+
 // Extrae el primer bloque JSON después de "Internamente", tolerando saltos de línea y texto explicativo
 function extractInternalJson(message: string): any | null {
   const internIndex = message.toLowerCase().indexOf('internamente');
@@ -198,6 +214,7 @@ if (internalData?.action === 'createClient' && internalData?.data) {
     
     console.log('Datos recibidos para crear cliente:', clientData, req.user.tenantId);
     const client = await createClientFromData(clientData, req.user.tenantId);
+    const explanation = getExplanationAfterJson(assistantResponse);
     res.status(201).json({
       success: true,
       response: 'Cliente creado con éxito.',
@@ -259,15 +276,24 @@ function normalize(str: string) {
 }
 
 const clients = await Client.find({ tenantId: req.user.tenantId });
-const client = clients.find(c => normalize(c.name) === normalize(expedienteData.clientName));
+let client = clients.find(c => normalize(c.name) === normalize(expedienteData.clientName));
 
 if (!client) {
-  return res.status(400).json({
-    success: false,
-    response: `No se encontró el cliente "${expedienteData.clientName}" en el sistema.`,
-    timestamp: new Date().toISOString()
+  // Usa el nombre proporcionado en expedienteData.clientName
+  const nameParts = expedienteData.clientName.split(' ');
+  const nombre = nameParts[0] || 'cliente';
+  const apellido = nameParts[1] || 'generico';
+  const email = `${normalize(nombre)}.${normalize(apellido)}@correo.com`;
+  const phone = '3333333333';
+
+  client = await Client.create({
+    name: expedienteData.clientName, // Usa el nombre solicitado
+    email,
+    phone,
+    tenantId: req.user.tenantId
   });
 }
+
 expedienteData.clientId = client._id;
 expedienteData.clientName = client.name; // Usa el valor real de la base de datos
 
@@ -279,6 +305,7 @@ console.log('Cliente encontrado:', client);
 
 try {
     const expediente = await createExpedienteFromData(expedienteData, req.user.tenantId);
+    const explanation = getExplanationAfterJson(assistantResponse);
     console.log('Expediente creado:', expediente);
     res.status(201).json({
       success: true,
@@ -412,6 +439,7 @@ if (citaData.caseId) {
 
   try {
     const cita = await createAppointmentFromData(appointmentPayload, req.user.tenantId);
+    const explanation = getExplanationAfterJson(assistantResponse);
     res.status(201).json({
       success: true,
       response: 'Cita agendada con éxito.',
