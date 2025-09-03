@@ -51,37 +51,52 @@ function cleanAssistantMessage(message: string): string {
 
 // Extrae el primer bloque JSON después de "Internamente", tolerando saltos de línea y texto explicativo
 function extractInternalJson(message: string): any | null {
-  const internIndex = message.indexOf('Internamente');
+  const internIndex = message.toLowerCase().indexOf('internamente');
   if (internIndex === -1) return null;
 
-  // Busca el primer bloque JSON después de "Internamente"
-  const afterIntern = message.slice(internIndex);
-  const jsonRegex = /{[\s\S]*?}/;
-  const match = afterIntern.match(jsonRegex);
-  if (match && match[0]) {
-    let jsonString = match[0];
-    // Elimina saltos de línea y espacios extra
-    jsonString = jsonString.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
-    try {
-      return JSON.parse(jsonString);
-    } catch (e) {
-      // Si falla, intenta agregar llaves de cierre
-      let fixedJson = jsonString;
-      let openBraces = (fixedJson.match(/{/g) || []).length;
-      let closeBraces = (fixedJson.match(/}/g) || []).length;
-      while (closeBraces < openBraces) {
-        fixedJson += '}';
-        closeBraces++;
-      }
-      try {
-        return JSON.parse(fixedJson);
-      } catch (e2) {
-        console.error('Error al parsear JSON interno (corregido):', e2, fixedJson);
-        return null;
+  // Busca la primera llave después de "internamente"
+  const firstBrace = message.indexOf('{', internIndex);
+  if (firstBrace === -1) return null;
+
+  // Busca la última llave antes de cualquier texto adicional
+  // Esto asegura que si hay texto después del JSON, solo se extrae el bloque JSON
+  let braceCount = 0;
+  let lastBrace = -1;
+  for (let i = firstBrace; i < message.length; i++) {
+    if (message[i] === '{') braceCount++;
+    if (message[i] === '}') {
+      braceCount--;
+      if (braceCount === 0) {
+        lastBrace = i;
+        break;
       }
     }
   }
-  return null;
+  if (lastBrace === -1) return null;
+
+  const jsonString = message.slice(firstBrace, lastBrace + 1)
+    .replace(/\n/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  try {
+    return JSON.parse(jsonString);
+  } catch (e) {
+    // Si falla, intenta agregar llaves de cierre
+    let fixedJson = jsonString;
+    let openBraces = (fixedJson.match(/{/g) || []).length;
+    let closeBraces = (fixedJson.match(/}/g) || []).length;
+    while (closeBraces < openBraces) {
+      fixedJson += '}';
+      closeBraces++;
+    }
+    try {
+      return JSON.parse(fixedJson);
+    } catch (e2) {
+      console.error('Error al parsear JSON interno (corregido):', e2, fixedJson);
+      return null;
+    }
+  }
 }
 
 // Busca el clientId por nombre y tenantId, ignorando acentos y mayúsculas
