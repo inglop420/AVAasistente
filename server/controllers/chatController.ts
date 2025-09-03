@@ -9,21 +9,23 @@ import { createAppointmentFromData } from './appointmentController';
 import Expediente from '../models/Expediente';
 
 
-function getOutputString(obj: any): string | null {
+function findJsonString(obj: any): string | null {
   if (!obj) return null;
-  if (typeof obj === 'string') return null;
+  // Si es string y contiene "internamente" y "{", probablemente es el mensaje útil
+  if (typeof obj === 'string' && obj.includes('internamente') && obj.includes('{')) {
+    return obj;
+  }
+  // Si es array, busca en cada elemento
   if (Array.isArray(obj)) {
     for (const item of obj) {
-      const found = getOutputString(item);
+      const found = findJsonString(item);
       if (found) return found;
     }
   }
+  // Si es objeto, busca en cada valor
   if (typeof obj === 'object') {
     for (const key of Object.keys(obj)) {
-      if (key === 'output' && typeof obj[key] === 'string') {
-        return obj[key];
-      }
-      const found = getOutputString(obj[key]);
+      const found = findJsonString(obj[key]);
       if (found) return found;
     }
   }
@@ -139,7 +141,7 @@ export const sendChatMessage = async (req: AuthRequest, res: Response) => {
 
   const assistantResponse =
   n8nResponse.data?.output ||
-  getOutputString(n8nResponse.data) ||
+  findJsonString(n8nResponse.data) ||
   n8nResponse.data?.message ||
   'Lo siento, no pude procesar tu consulta en este momento.';
 
