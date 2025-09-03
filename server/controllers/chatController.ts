@@ -11,7 +11,11 @@ import Expediente from '../models/Expediente';
 
 function findOutputField(obj: any): string | null {
   if (!obj) return null;
-  if (typeof obj === 'string') return obj;
+  if (typeof obj === 'string') {
+    // Prioriza si contiene "internamente" y un bloque JSON
+    if (obj.includes('internamente') && obj.includes('{')) return obj;
+    return null;
+  }
   if (Array.isArray(obj)) {
     for (const item of obj) {
       const found = findOutputField(item);
@@ -21,7 +25,7 @@ function findOutputField(obj: any): string | null {
   if (typeof obj === 'object') {
     for (const key of Object.keys(obj)) {
       if (key === 'output' && typeof obj[key] === 'string') {
-        return obj[key];
+        if (obj[key].includes('internamente') && obj[key].includes('{')) return obj[key];
       }
       const found = findOutputField(obj[key]);
       if (found) return found;
