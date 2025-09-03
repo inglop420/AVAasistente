@@ -9,40 +9,23 @@ import { createAppointmentFromData } from './appointmentController';
 import Expediente from '../models/Expediente';
 
 
-function findOutputField(obj: any): string | null {
+function findOutputFieldDeep(obj: any): string | null {
   if (!obj) return null;
-  if (typeof obj === 'string') {
-    // Prioriza si contiene "internamente" y un bloque JSON
-    if (obj.includes('internamente') && obj.includes('{')) return obj;
-    return null;
-  }
+  if (typeof obj === 'string') return null;
   if (Array.isArray(obj)) {
     for (const item of obj) {
-      const found = findOutputField(item);
+      const found = findOutputFieldDeep(item);
       if (found) return found;
     }
   }
   if (typeof obj === 'object') {
     for (const key of Object.keys(obj)) {
       if (key === 'output' && typeof obj[key] === 'string') {
-        if (obj[key].includes('internamente') && obj[key].includes('{')) return obj[key];
+        return obj[key];
       }
-      const found = findOutputField(obj[key]);
+      const found = findOutputFieldDeep(obj[key]);
       if (found) return found;
     }
-  }
-  return null;
-}
-
-function findAssistantTextInKeys(obj: any): string | null {
-  if (!obj || typeof obj !== 'object') return null;
-  for (const key of Object.keys(obj)) {
-    if (key.includes('internamente') && key.includes('{')) {
-      return key;
-    }
-    // Busca recursivamente en los valores
-    const found = findAssistantTextInKeys(obj[key]);
-    if (found) return found;
   }
   return null;
 }
@@ -175,8 +158,7 @@ export const sendChatMessage = async (req: AuthRequest, res: Response) => {
 
   const assistantResponse =
   n8nResponse.data?.output ||
-  findOutputField(n8nResponse.data) ||
-  findAssistantTextInKeys(n8nResponse.data) ||
+  findOutputFieldDeep(n8nResponse.data) ||
   extractDeepestValue(n8nResponse.data) ||
   n8nResponse.data?.message ||
   'Lo siento, no pude procesar tu consulta en este momento.';
