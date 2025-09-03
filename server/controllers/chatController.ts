@@ -248,7 +248,7 @@ if (internalData?.action === 'createExpediente' && internalData?.data) {
   const expedienteData = { ...internalData.data };
   // Aquí puedes agregar validaciones o normalizaciones de campos
 // Normaliza los nombres de los campos
-expedienteData.numeroExpediente = expedienteData.numero;
+expedienteData.numeroExpediente = expedienteData.numeroExpediente || expedienteData.numero;
 delete expedienteData.numero;
 
 expedienteData.clientName = expedienteData.cliente;
