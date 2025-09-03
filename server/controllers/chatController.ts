@@ -9,28 +9,22 @@ import { createAppointmentFromData } from './appointmentController';
 import Expediente from '../models/Expediente';
 
 
-function findAssistantMessage(obj: any): string | null {
-  // 1. Busca string con "internamente" y JSON en claves y valores
+function getOutputString(obj: any): string | null {
   if (!obj) return null;
-  if (typeof obj === 'string') {
-    if (obj.includes('internamente') && obj.includes('{')) return obj;
-    return obj;
-  }
+  if (typeof obj === 'string') return null;
   if (Array.isArray(obj)) {
     for (const item of obj) {
-      const found = findAssistantMessage(item);
+      const found = getOutputString(item);
       if (found) return found;
     }
   }
   if (typeof obj === 'object') {
     for (const key of Object.keys(obj)) {
-      // Busca en claves
-      if (key.includes('internamente') && key.includes('{')) return key;
-      // Busca en valores
-      const found = findAssistantMessage(obj[key]);
+      if (key === 'output' && typeof obj[key] === 'string') {
+        return obj[key];
+      }
+      const found = getOutputString(obj[key]);
       if (found) return found;
-      // Busca campo output
-      if (key === 'output' && typeof obj[key] === 'string') return obj[key];
     }
   }
   return null;
@@ -145,7 +139,7 @@ export const sendChatMessage = async (req: AuthRequest, res: Response) => {
 
   const assistantResponse =
   n8nResponse.data?.output ||
-  findAssistantMessage(n8nResponse.data) ||
+  getOutputString(n8nResponse.data) ||
   n8nResponse.data?.message ||
   'Lo siento, no pude procesar tu consulta en este momento.';
 
