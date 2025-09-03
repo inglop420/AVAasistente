@@ -49,6 +49,6 @@ const AppointmentSchema = new Schema<IAppointment>({
 });
 
 // Index for tenant isolation
-AppointmentSchema.index({ tenantId: 1 });
+//AppointmentSchema.index({ tenantId: 1 });
 
 export default mongoose.model<IAppointment>('Appointment', AppointmentSchema);

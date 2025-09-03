@@ -60,6 +60,6 @@ const ExpedienteSchema = new Schema<IExpediente>({
 });
 
 // Index for tenant isolation
-ExpedienteSchema.index({ tenantId: 1 });
+//ExpedienteSchema.index({ tenantId: 1 });
 
 export default mongoose.model<IExpediente>('Expediente', ExpedienteSchema);

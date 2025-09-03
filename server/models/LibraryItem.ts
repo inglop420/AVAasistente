@@ -33,6 +33,6 @@ const LibraryItemSchema = new Schema<ILibraryItem>({
 });
 
 // Index for tenant isolation
-LibraryItemSchema.index({ tenantId: 1 });
+//LibraryItemSchema.index({ tenantId: 1 });
 
 export default mongoose.model<ILibraryItem>('LibraryItem', LibraryItemSchema);
