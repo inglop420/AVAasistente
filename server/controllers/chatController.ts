@@ -9,29 +9,27 @@ import { createAppointmentFromData } from './appointmentController';
 import Expediente from '../models/Expediente';
 
 
-function findJsonString(obj: any): string | null {
-  if (!obj) return null;
-  // Si es string y contiene "internamente" y "{", probablemente es el mensaje útil
-  if (typeof obj === 'string' && obj.includes('internamente') && obj.includes('{')) {
-    return obj;
-  }
-  // Si es array, busca en cada elemento
+
+
+function extractDeepestValue(obj: any): string {
+  if (typeof obj === 'string') return obj;
   if (Array.isArray(obj)) {
     for (const item of obj) {
-      const found = findJsonString(item);
-      if (found) return found;
+      const val = extractDeepestValue(item);
+      if (val) return val;
     }
+    return '';
   }
-  // Si es objeto, busca en cada valor
-  if (typeof obj === 'object') {
-    for (const key of Object.keys(obj)) {
-      const found = findJsonString(obj[key]);
-      if (found) return found;
+  if (typeof obj === 'object' && obj !== null) {
+    const keys = Object.keys(obj);
+    for (const key of keys) {
+      const val = extractDeepestValue(obj[key]);
+      if (val) return val;
     }
+    return '';
   }
-  return null;
+  return '';
 }
-
 
 // Limpia la respuesta del asistente, ocultando todo desde "Internamente" y el bloque JSON, incluyendo texto explicativo posterior
 function cleanAssistantMessage(message: string): string {
@@ -141,7 +139,7 @@ export const sendChatMessage = async (req: AuthRequest, res: Response) => {
 
   const assistantResponse =
   n8nResponse.data?.output ||
-  findJsonString(n8nResponse.data) ||
+  extractDeepestValue(n8nResponse.data) ||
   n8nResponse.data?.message ||
   'Lo siento, no pude procesar tu consulta en este momento.';
 
