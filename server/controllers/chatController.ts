@@ -9,21 +9,24 @@ import { createAppointmentFromData } from './appointmentController';
 import Expediente from '../models/Expediente';
 
 
-function findOutputFieldDeep(obj: any): string | null {
+function findAssistantMessage(obj: any): string | null {
   if (!obj) return null;
-  if (typeof obj === 'string') return null;
+  if (typeof obj === 'string') {
+    if (obj.includes('internamente') && obj.includes('{')) return obj;
+    return null;
+  }
   if (Array.isArray(obj)) {
     for (const item of obj) {
-      const found = findOutputFieldDeep(item);
+      const found = findAssistantMessage(item);
       if (found) return found;
     }
   }
   if (typeof obj === 'object') {
     for (const key of Object.keys(obj)) {
-      if (key === 'output' && typeof obj[key] === 'string') {
-        return obj[key];
-      }
-      const found = findOutputFieldDeep(obj[key]);
+      // Busca en claves
+      if (key.includes('internamente') && key.includes('{')) return key;
+      // Busca en valores
+      const found = findAssistantMessage(obj[key]);
       if (found) return found;
     }
   }
@@ -158,7 +161,7 @@ export const sendChatMessage = async (req: AuthRequest, res: Response) => {
 
   const assistantResponse =
   n8nResponse.data?.output ||
-  findOutputFieldDeep(n8nResponse.data) ||
+  findAssistantMessage(n8nResponse.data) ||
   extractDeepestValue(n8nResponse.data) ||
   n8nResponse.data?.message ||
   'Lo siento, no pude procesar tu consulta en este momento.';
