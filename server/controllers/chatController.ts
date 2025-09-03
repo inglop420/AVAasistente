@@ -8,6 +8,20 @@ import Client from '../models/Client';
 import { createAppointmentFromData } from './appointmentController';
 import Expediente from '../models/Expediente';
 
+
+function findAssistantTextInKeys(obj: any): string | null {
+  if (!obj || typeof obj !== 'object') return null;
+  for (const key of Object.keys(obj)) {
+    if (key.includes('internamente') && key.includes('{')) {
+      return key;
+    }
+    // Busca recursivamente en los valores
+    const found = findAssistantTextInKeys(obj[key]);
+    if (found) return found;
+  }
+  return null;
+}
+
 // Agrega la función aquí, antes de export const sendChatMessage...
 function extractDeepestValue(obj: any): string {
   if (typeof obj === 'string') return obj;
@@ -136,6 +150,7 @@ export const sendChatMessage = async (req: AuthRequest, res: Response) => {
 
   const assistantResponse =
   n8nResponse.data?.output ||
+  findAssistantTextInKeys(n8nResponse.data) ||
   extractDeepestValue(n8nResponse.data) ||
   n8nResponse.data?.message ||
   'Lo siento, no pude procesar tu consulta en este momento.';
