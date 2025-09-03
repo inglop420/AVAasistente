@@ -9,6 +9,27 @@ import { createAppointmentFromData } from './appointmentController';
 import Expediente from '../models/Expediente';
 
 
+function findOutputField(obj: any): string | null {
+  if (!obj) return null;
+  if (typeof obj === 'string') return obj;
+  if (Array.isArray(obj)) {
+    for (const item of obj) {
+      const found = findOutputField(item);
+      if (found) return found;
+    }
+  }
+  if (typeof obj === 'object') {
+    for (const key of Object.keys(obj)) {
+      if (key === 'output' && typeof obj[key] === 'string') {
+        return obj[key];
+      }
+      const found = findOutputField(obj[key]);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
 function findAssistantTextInKeys(obj: any): string | null {
   if (!obj || typeof obj !== 'object') return null;
   for (const key of Object.keys(obj)) {
@@ -150,6 +171,7 @@ export const sendChatMessage = async (req: AuthRequest, res: Response) => {
 
   const assistantResponse =
   n8nResponse.data?.output ||
+  findOutputField(n8nResponse.data) ||
   findAssistantTextInKeys(n8nResponse.data) ||
   extractDeepestValue(n8nResponse.data) ||
   n8nResponse.data?.message ||
