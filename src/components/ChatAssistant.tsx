@@ -112,7 +112,7 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({
                   : 'bg-gray-100 text-gray-900'
               }`}
             >
-              <p className="text-sm">{message.text}</p>
+              <p className="text-sm" style={{ whiteSpace: 'pre-line' }}>{message.text}</p>
             </div>
             {message.isUser && (
               <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
