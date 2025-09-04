@@ -127,9 +127,11 @@ function extractInternalJson(message: string): any | null {
 // Busca el clientId por nombre y tenantId, ignorando acentos y mayúsculas
 async function getClientIdByName(name: string, tenantId: string) {
   // Normaliza el nombre recibido
-  function normalize(str: string) {
-    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-  }
+function normalize(str: any) {
+  return typeof str === 'string'
+    ? str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    : '';
+}
   const clients = await Client.find({ tenantId });
   const client = clients.find(c => normalize(c.name) === normalize(name));
   return client ? client._id : null;
@@ -255,70 +257,70 @@ if (internalData?.action === 'createExpediente' && internalData?.data) {
   }
   // Normaliza los datos si es necesario
   const expedienteData = { ...internalData.data };
-  // Aquí puedes agregar validaciones o normalizaciones de campos
-// Normaliza los nombres de los campos
-expedienteData.numeroExpediente = expedienteData.numeroExpediente || expedienteData.numero;
-delete expedienteData.numero;
+  expedienteData.numeroExpediente = expedienteData.numeroExpediente || expedienteData.numero;
+  delete expedienteData.numero;
 
-expedienteData.clientName = expedienteData.cliente;
-delete expedienteData.cliente;
+  expedienteData.clientName = expedienteData.cliente;
+  delete expedienteData.cliente;
 
-expedienteData.title = expedienteData.titulo;
-delete expedienteData.titulo;
+  expedienteData.title = expedienteData.titulo;
+  delete expedienteData.titulo;
 
-expedienteData.status = expedienteData.estado;
-delete expedienteData.estado;
+  expedienteData.status = expedienteData.estado;
+  delete expedienteData.estado;
 
-expedienteData.dueDate = expedienteData.fechaLimite;
-delete expedienteData.fechaLimite;
+  expedienteData.dueDate = expedienteData.fechaLimite;
+  delete expedienteData.fechaLimite;
 
-// Normaliza el status
-const statusMap: Record<string, string> = {
-  'Abierto': 'Activo',
-  'En Trámite': 'Pendiente',
-  'Cerrado': 'Cerrado'
-};
+  function normalize(str: any) {
+    return typeof str === 'string'
+      ? str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+      : '';
+  }
 
-// Busca el cliente por nombre y tenantId, ignorando acentos y mayúsculas
-function normalize(str: string) {
-  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-}
+  const clients = await Client.find({ tenantId: req.user.tenantId });
+  let client = clients.find(c => normalize(c.name) === normalize(expedienteData.clientName));
 
-const clients = await Client.find({ tenantId: req.user.tenantId });
-let client = clients.find(c => normalize(c.name) === normalize(expedienteData.clientName));
+  if (!client) {
+    const nameParts = expedienteData.clientName.split(' ');
+    const nombre = nameParts[0] || 'cliente';
+    const apellido = nameParts[1] || 'generico';
+    const email = `${normalize(nombre)}.${normalize(apellido)}@correo.com`;
+    const phone = '3333333333';
 
-if (!client) {
-  // Usa el nombre proporcionado en expedienteData.clientName
-  const nameParts = expedienteData.clientName.split(' ');
-  const nombre = nameParts[0] || 'cliente';
-  const apellido = nameParts[1] || 'generico';
-  const email = `${normalize(nombre)}.${normalize(apellido)}@correo.com`;
-  const phone = '3333333333';
+    client = await Client.create({
+      name: expedienteData.clientName,
+      email,
+      phone,
+      tenantId: req.user.tenantId
+    });
+  }
 
-  client = await Client.create({
-    name: expedienteData.clientName, // Usa el nombre solicitado
-    email,
-    phone,
+  expedienteData.clientId = client._id;
+  expedienteData.clientName = client.name;
+  expedienteData.origen = 'Juzgados';
+
+  // Verifica si el expediente ya existe
+  const existingExpediente = await Expediente.findOne({
+    numeroExpediente: expedienteData.numeroExpediente,
     tenantId: req.user.tenantId
   });
-}
 
-expedienteData.clientId = client._id;
-expedienteData.clientName = client.name; // Usa el valor real de la base de datos
+  if (existingExpediente) {
+    return res.status(400).json({
+      success: false,
+      response: `El expediente ${expedienteData.numeroExpediente} ya existe.`,
+      expediente: existingExpediente,
+      timestamp: new Date().toISOString()
+    });
+  }
 
-// Corrige el valor de origen si es necesario
-expedienteData.origen = 'Juzgados'; // Usa el valor válido según tu enum
-
-console.log('Datos para crear expediente:', expedienteData);
-console.log('Cliente encontrado:', client);  
-
-try {
+  try {
     const expediente = await createExpedienteFromData(expedienteData, req.user.tenantId);
     const explanation = getExplanationAfterJson(assistantResponse);
-    console.log('Expediente creado:', expediente);
     res.status(201).json({
       success: true,
-      response: 'Expediente creado con éxito.',
+      response: explanation || 'Expediente creado con éxito.',
       expediente,
       timestamp: new Date().toISOString()
     });
