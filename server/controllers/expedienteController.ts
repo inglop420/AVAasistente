@@ -161,7 +161,7 @@ export const deleteExpediente = async (req: AuthRequest, res: Response) => {
 
 export const createExpedienteFromData = async (
   data: {
-    numero: string;
+    numeroExpediente?: string;
     tipoProceso: string;
     origen: string;
     clientName: string;
@@ -174,11 +174,12 @@ export const createExpedienteFromData = async (
 ) => {
   try {
     // Verifica si el expediente ya existe en este tenant
-    const existingExpediente = await Expediente.findOne({ numeroExpediente: data.numero, tenantId });
+    const numero = data.numeroExpediente;
+    const existingExpediente = await Expediente.findOne({ numeroExpediente: numero, tenantId });
     if (existingExpediente) throw new Error('El expediente ya existe');
 
     const expediente = new Expediente({
-      numeroExpediente: data.numero,
+      numeroExpediente:numero,
       tipoProceso: data.tipoProceso,
       origen: data.origen,
       title: data.title,
