@@ -44,7 +44,7 @@ const ExpedienteSchema = new Schema<IExpediente>({
   },
   status: {
     type: String,
-    enum: ['Activo', 'Pendiente', 'Cerrado'],
+    enum: ['Activo', 'Pendiente', 'En tramite', 'Cerrado'],
     default: 'Activo'
   },
   tenantId: {
