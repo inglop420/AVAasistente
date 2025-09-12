@@ -4,12 +4,14 @@ export interface User {
   email: string;
   role: string;
   organizationId: string;
+  createdAt?: string;
   // ...otros campos necesarios
 }
 
 export interface Organization {
   _id: string;
   name: string;
+  createdAt: string;
   // ...otros campos necesarios
 }
 
@@ -160,8 +162,11 @@ export interface SCJNSearchFilters {
 }
 
 export type NavigationItem =
+  | 'dashboard'
   | 'clientes'
   | 'expedientes'
   | 'agenda'
   | 'documentos'
-  | 'biblioteca';
+  | 'biblioteca'
+  | 'configuracion'
+  | 'admin';

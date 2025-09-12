@@ -55,9 +55,9 @@ const UsersManager: React.FC = () => {
     if (!selectedUser) return;
     
     try {
-      const response = await adminAPI.updateUser(selectedUser.id, userData);
+      const response = await adminAPI.updateUser(selectedUser._id, userData);
       setUsers(users.map(user => 
-        user.id === selectedUser.id ? response.data : user
+        user._id === selectedUser._id ? response.data : user
       ));
       setShowModal(false);
       setSelectedUser(null);
@@ -71,7 +71,7 @@ const UsersManager: React.FC = () => {
     if (window.confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
       try {
         await adminAPI.deleteUser(userId);
-        setUsers(users.filter(user => user.id !== userId));
+        setUsers(users.filter(user => user._id !== userId));
       } catch (error) {
         console.error('Error deleting user:', error);
         alert('Error al eliminar usuario');
@@ -195,7 +195,7 @@ const UsersManager: React.FC = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {users.map((user) => (
-                  <tr key={user.id} className="hover:bg-gray-50">
+                  <tr key={user._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
@@ -221,7 +221,7 @@ const UsersManager: React.FC = () => {
                     </td>
                     {currentUser?.role === 'superadmin' && (
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        {user.organizationName || 'Sin organización'}
+                        {user.organizationId || 'Sin organización'}
                       </td>
                     )}
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
@@ -235,9 +235,9 @@ const UsersManager: React.FC = () => {
                         >
                           <Edit className="w-4 h-4" />
                         </button>
-                        {user.id !== currentUser?.id && (
+                        {user._id !== currentUser?._id && (
                           <button 
-                            onClick={() => handleDeleteUser(user.id)}
+                            onClick={() => handleDeleteUser(user._id)}
                             className="text-red-600 hover:text-red-700 p-1 rounded transition-colors duration-200"
                           >
                             <Trash2 className="w-4 h-4" />

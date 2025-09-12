@@ -25,7 +25,7 @@ const OrganizationsManager: React.FC = () => {
     }
   };
 
-  const handleCreateOrganization = async (orgData: Omit<Organization, 'id' | 'createdAt'>) => {
+  const handleCreateOrganization = async (orgData: {_id?: string; name: string}) => {
     try {
       const response = await adminAPI.createOrganization(orgData);
       setOrganizations([response.data, ...organizations]);
@@ -36,13 +36,13 @@ const OrganizationsManager: React.FC = () => {
     }
   };
 
-  const handleUpdateOrganization = async (orgData: Omit<Organization, 'id' | 'createdAt'>) => {
+  const handleUpdateOrganization = async (orgData: {_id?: string; name: string}) => {
     if (!selectedOrganization) return;
     
     try {
-      const response = await adminAPI.updateOrganization(selectedOrganization.id, orgData);
+      const response = await adminAPI.updateOrganization(selectedOrganization._id, orgData);
       setOrganizations(organizations.map(org => 
-        org.id === selectedOrganization.id ? response.data : org
+        org._id === selectedOrganization._id ? response.data : org
       ));
       setShowModal(false);
       setSelectedOrganization(null);
@@ -56,7 +56,7 @@ const OrganizationsManager: React.FC = () => {
     if (window.confirm('¿Estás seguro de que deseas eliminar esta organización?')) {
       try {
         await adminAPI.deleteOrganization(orgId);
-        setOrganizations(organizations.filter(org => org.id !== orgId));
+        setOrganizations(organizations.filter(org => org._id !== orgId));
       } catch (error) {
         console.error('Error deleting organization:', error);
         alert('Error al eliminar organización');
@@ -113,7 +113,7 @@ const OrganizationsManager: React.FC = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {organizations.map((organization) => (
-                  <tr key={organization.id} className="hover:bg-gray-50">
+                  <tr key={organization._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -136,7 +136,7 @@ const OrganizationsManager: React.FC = () => {
                           <Edit className="w-4 h-4" />
                         </button>
                         <button 
-                          onClick={() => handleDeleteOrganization(organization.id)}
+                          onClick={() => handleDeleteOrganization(organization._id)}
                           className="text-red-600 hover:text-red-700 p-1 rounded transition-colors duration-200"
                         >
                           <Trash2 className="w-4 h-4" />

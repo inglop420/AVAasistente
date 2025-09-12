@@ -4,7 +4,7 @@ import { Organization } from '../../types';
 
 interface OrganizationModalProps {
   organization: Organization | null;
-  onSave: (organization: Omit<Organization, 'id' | 'createdAt'>) => void;
+  onSave: (organization: { _id?: string; name: string }) => void;
   onClose: () => void;
 }
 

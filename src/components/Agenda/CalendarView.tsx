@@ -221,7 +221,7 @@ const CalendarView: React.FC = () => {
                 <div className="space-y-3">
                   {selectedDateAppointments.length > 0 ? (
                     selectedDateAppointments.map(appointment => (
-                      <div key={appointment.id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                      <div key={appointment._id} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
                         <h4 className="font-medium text-gray-900 mb-2">{appointment.title}</h4>
                         
                         <div className="space-y-1 text-sm text-gray-600">
