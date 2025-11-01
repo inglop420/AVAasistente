@@ -103,6 +103,10 @@ export const adminAPI = {
 // Chat API
 export const chatAPI = {
   sendMessage: (message: string) => api.post('/api/chat/message', { message }),
+  getConversations: () => api.get('/api/chat/conversations'),
+  createConversation: (data: any) => api.post('/api/chat/conversations', data),
+  updateConversation: (id: string, data: any) => api.put(`/api/chat/conversations/${id}`, data),
+  deleteConversation: (id: string) => api.delete(`/api/chat/conversations/${id}`),
 };
 
 // Movements API
