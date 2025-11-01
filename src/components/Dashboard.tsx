@@ -91,10 +91,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
             ? 'opacity-0 transform -translate-y-4 h-0 overflow-hidden mb-0' 
             : 'opacity-100 transform translate-y-0 mb-12'
         }`}>
-          <h1 className="text-4xl font-normal text-gray-800">
+          <h1 className="text-3xl sm:text-4xl font-normal text-gray-800">
             Hola {user?.name}, soy AVA tu asistente Jurídico
           </h1>
-          <h2 className="text-2xl font-normal text-gray-700">
+          <h2 className="text-xl sm:text-2xl font-normal text-gray-700">
             ¿En qué te puedo ayudar?
           </h2>
         </div>

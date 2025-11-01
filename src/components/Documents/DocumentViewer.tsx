@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { X, Download, ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCw, FileText, AlertCircle } from 'lucide-react';
 import { Document as PDFDocument, Page, pdfjs } from 'react-pdf';
 import { Document } from '../../types';
@@ -21,6 +21,22 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ document, onClose }) =>
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [fileUrl, setFileUrl] = useState<string>('');
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [pageWidth, setPageWidth] = useState<number | undefined>(undefined);
+
+  useLayoutEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        const w = containerRef.current.clientWidth;
+        // leave some padding
+        setPageWidth(Math.floor(w * 0.95));
+      }
+    };
+
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, [fileUrl]);
 
   useEffect(() => {
     loadDocument();
@@ -157,7 +173,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ document, onClose }) =>
     // PDF Viewer
     if (docType === 'pdf') {
       return (
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center w-full" ref={containerRef}>
           <PDFDocument
             file={fileUrl}
             onLoadSuccess={onDocumentLoadSuccess}
@@ -170,7 +186,8 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ document, onClose }) =>
           >
             <Page
               pageNumber={pageNumber}
-              scale={scale}
+              // prefer width on small screens so PDF fits container; fallback to scale on very large screens
+              width={pageWidth}
               rotate={rotation}
               loading={
                 <div className="flex items-center justify-center h-96">
@@ -242,7 +259,7 @@ const DocumentViewer: React.FC<DocumentViewerProps> = ({ document, onClose }) =>
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[95vh] overflow-hidden flex flex-col">
+  <div className="bg-white rounded-lg shadow-xl w-full max-w-full sm:max-w-6xl max-h-[95vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
           <div className="flex items-center gap-3">

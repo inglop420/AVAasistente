@@ -18,6 +18,7 @@ const MainApp: React.FC = () => {
   const { user, isLoading } = useAuth();
   const [currentView, setCurrentView] = useState<NavigationItem>('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -59,22 +60,47 @@ const MainApp: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {/* Sidebar - Siempre visible */}
-      <Sidebar
-        currentView={currentView}
-        onViewChange={setCurrentView}
-        isCollapsed={isSidebarCollapsed}
-      />
+      {/* Sidebar - oculto en móvil, drawer usado para móvil */}
+      <div className="hidden md:flex">
+        <Sidebar
+          currentView={currentView}
+          onViewChange={setCurrentView}
+          isCollapsed={isSidebarCollapsed}
+        />
+      </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header - Siempre visible */}
-        <Header onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
+        <Header onToggleSidebar={() => {
+          // si estamos en móvil, abrimos/cerramos el drawer móvil; si no, colapsamos el sidebar
+          if (typeof window !== 'undefined' && window.innerWidth < 768) {
+            setIsMobileMenuOpen(prev => !prev);
+          } else {
+            setIsSidebarCollapsed(prev => !prev);
+          }
+        }} />
         
-        <main className="flex-1 overflow-x-hidden overflow-y-auto">
+        <main className="flex-1 overflow-x-hidden overflow-y-auto px-4 sm:px-6">
           {renderCurrentView()}
         </main>
       </div>
+
+      
+    
+      {/* Mobile sidebar drawer */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/40" onClick={() => setIsMobileMenuOpen(false)} />
+          <div className="absolute left-0 top-0 bottom-0 w-64">
+            <Sidebar
+              currentView={currentView}
+              onViewChange={(v) => { setCurrentView(v); setIsMobileMenuOpen(false); }}
+              isCollapsed={false}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Floating Assistant - Siempre visible */}
       <FloatingAssistant />

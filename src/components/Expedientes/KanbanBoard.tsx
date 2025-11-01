@@ -229,131 +229,75 @@ const ExpedientesTable: React.FC = () => {
 
         {/* Expedientes Table */}
         {filteredExpedientes.length > 0 ? (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Número
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tipo de Proceso
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Origen
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Cliente
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Estado
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Fecha Creación
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Documentos
-                    </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Acciones
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredExpedientes.map((expediente) => (
-                    <tr key={expediente.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
-                          {expediente.numeroExpediente || 'N/A'}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {expediente.tipoProceso || expediente.title}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          {getOrigenIcon(expediente.origen || 'Oficinas')}
-                          <span className="text-sm text-gray-900">
-                            {expediente.origen || 'Oficinas'}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <User className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm text-gray-900">{expediente.clientName}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(expediente.status)}`}>
-                          {expediente.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Calendar className="w-4 h-4" />
-                          <span>{new Date(expediente.createdAt).toLocaleDateString('es-ES')}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <FileText className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm text-gray-900">
-                            {documentCounts[expediente.id] || 0}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            className="text-gray-600 hover:text-blue-600 p-1 rounded transition-colors duration-200"
-                            title="Ver expediente"
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          {permissions.expedientes.update && (
-                            <button
-                              onClick={() => handleEditExpediente(expediente)}
-                              className="text-gray-600 hover:text-gray-700 p-1 rounded transition-colors duration-200"
-                              title="Editar expediente"
-                            >
-                              <Edit className="w-4 h-4" />
-                            </button>
-                          )}
-                          <button
-                            className="text-gray-600 hover:text-green-600 p-1 rounded transition-colors duration-200"
-                            onClick={() => handleShowMovements(expediente)}
-                            title="Ver/Agregar movimientos"
-                          >
-                            <FolderPlus className="w-4 h-4" />
-                          </button>
-                          <button
-                            className="text-gray-600 hover:text-blue-600 p-1 rounded transition-colors duration-200"
-                            onClick={() => handleShowTasks(expediente)}
-                            title="Ver/Agregar tareas"
-                          >
-                            <CheckSquare className="w-4 h-4" />
-                          </button>
-                          {permissions.expedientes.delete && (
-                            <button
-                              onClick={() => handleDeleteExpediente(expediente.id)}
-                              className="text-red-600 hover:text-red-700 p-1 rounded transition-colors duration-200"
-                              title="Eliminar expediente"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                      </td>
+          <>
+            {/* Desktop table */}
+            <div className="hidden md:block bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Número</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo de Proceso</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Origen</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha Creación</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Documentos</th>
+                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredExpedientes.map((expediente) => (
+                      <tr key={expediente.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-normal md:whitespace-nowrap"><div className="text-sm font-medium text-gray-900">{expediente.numeroExpediente || 'N/A'}</div></td>
+                        <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-normal md:whitespace-nowrap"><div className="text-sm text-gray-900">{expediente.tipoProceso || expediente.title}</div></td>
+                        <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-normal md:whitespace-nowrap"><div className="flex items-center gap-2">{getOrigenIcon(expediente.origen || 'Oficinas')}<span className="text-sm text-gray-900">{expediente.origen || 'Oficinas'}</span></div></td>
+                        <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-normal md:whitespace-nowrap"><div className="flex items-center gap-2"><User className="w-4 h-4 text-gray-400" /><span className="text-sm text-gray-900">{expediente.clientName}</span></div></td>
+                        <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-normal md:whitespace-nowrap"><span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(expediente.status)}`}>{expediente.status}</span></td>
+                        <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-normal md:whitespace-nowrap"><div className="flex items-center gap-2 text-sm text-gray-600"><Calendar className="w-4 h-4" /><span>{new Date(expediente.createdAt).toLocaleDateString('es-ES')}</span></div></td>
+                        <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-normal md:whitespace-nowrap"><div className="flex items-center gap-2"><FileText className="w-4 h-4 text-gray-400" /><span className="text-sm text-gray-900">{documentCounts[expediente.id] || 0}</span></div></td>
+                        <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-normal md:whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex items-center justify-end gap-2">
+                            <button className="text-gray-600 hover:text-blue-600 p-1 rounded transition-colors duration-200" title="Ver expediente"><Eye className="w-4 h-4" /></button>
+                            {permissions.expedientes.update && (<button onClick={() => handleEditExpediente(expediente)} className="text-gray-600 hover:text-gray-700 p-1 rounded transition-colors duration-200" title="Editar expediente"><Edit className="w-4 h-4" /></button>)}
+                            <button className="text-gray-600 hover:text-green-600 p-1 rounded transition-colors duration-200" onClick={() => handleShowMovements(expediente)} title="Ver/Agregar movimientos"><FolderPlus className="w-4 h-4" /></button>
+                            <button className="text-gray-600 hover:text-blue-600 p-1 rounded transition-colors duration-200" onClick={() => handleShowTasks(expediente)} title="Ver/Agregar tareas"><CheckSquare className="w-4 h-4" /></button>
+                            {permissions.expedientes.delete && (<button onClick={() => handleDeleteExpediente(expediente.id)} className="text-red-600 hover:text-red-700 p-1 rounded transition-colors duration-200" title="Eliminar expediente"><Trash2 className="w-4 h-4" /></button>)}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+
+            {/* Mobile cards */}
+            <div className="md:hidden space-y-3">
+              {filteredExpedientes.map((expediente) => (
+                <div key={expediente.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <div className="text-sm font-medium text-gray-900">{expediente.tipoProceso || expediente.title}</div>
+                      <div className="text-xs text-gray-500">{expediente.clientName} • {expediente.numeroExpediente || 'N/A'}</div>
+                      <div className="mt-2"><span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(expediente.status)}`}>{expediente.status}</span></div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm text-gray-900">{documentCounts[expediente.id] || 0} docs</div>
+                      <div className="text-xs text-gray-500">{new Date(expediente.createdAt).toLocaleDateString('es-ES')}</div>
+                    </div>
+                  </div>
+                  <div className="mt-3 flex items-center justify-end gap-2">
+                    <button className="text-gray-600 hover:text-blue-600 p-1 rounded transition-colors duration-200" title="Ver expediente"><Eye className="w-4 h-4" /></button>
+                    {permissions.expedientes.update && (<button onClick={() => handleEditExpediente(expediente)} className="text-gray-600 hover:text-gray-700 p-1 rounded transition-colors duration-200" title="Editar expediente"><Edit className="w-4 h-4" /></button>)}
+                    <button className="text-gray-600 hover:text-green-600 p-1 rounded transition-colors duration-200" onClick={() => handleShowMovements(expediente)} title="Ver/Agregar movimientos"><FolderPlus className="w-4 h-4" /></button>
+                    <button className="text-gray-600 hover:text-blue-600 p-1 rounded transition-colors duration-200" onClick={() => handleShowTasks(expediente)} title="Ver/Agregar tareas"><CheckSquare className="w-4 h-4" /></button>
+                    {permissions.expedientes.delete && (<button onClick={() => handleDeleteExpediente(expediente.id)} className="text-red-600 hover:text-red-700 p-1 rounded transition-colors duration-200" title="Eliminar expediente"><Trash2 className="w-4 h-4" /></button>)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         ) : (
           <div className="text-center py-12">
             <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />

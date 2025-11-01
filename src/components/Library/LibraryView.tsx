@@ -801,21 +801,21 @@ const LibraryView: React.FC = () => {
                           </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-normal md:whitespace-nowrap">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDocumentTypeColor(document.tipo)}`}>
                           {document.tipo}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-normal md:whitespace-nowrap text-sm text-gray-600">
                         {document.epoca || '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-normal md:whitespace-nowrap text-sm text-gray-600">
                         {document.instancia || '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-normal md:whitespace-nowrap text-sm text-gray-600">
                         {document.materia || '-'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <td className="px-4 py-3 sm:px-6 sm:py-4 whitespace-normal md:whitespace-nowrap text-sm text-gray-600">
                         {document.año || '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
