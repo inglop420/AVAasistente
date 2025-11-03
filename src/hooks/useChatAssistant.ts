@@ -66,5 +66,9 @@ export const useChatAssistant = () => {
     inputValue,
     setInputValue,
     handleSendMessage
+    ,
+    // allow external components to replace or clear messages
+    loadMessages: (m: ChatMessage[]) => setMessages(m),
+    clearMessages: () => setMessages([])
   };
 };

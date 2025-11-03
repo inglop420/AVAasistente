@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Plus, Mic, Users, Briefcase, Calendar, Send } from 'lucide-react';
+import { Plus, Mic, Users, Briefcase, Calendar, Send, List } from 'lucide-react';
 import { NavigationItem } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import ClientModal from './Clients/ClientModal';
 import ExpedienteModal from './Expedientes/ExpedienteModal';
 import AppointmentModal from './Agenda/AppointmentModal';
-import { clientsAPI, expedientesAPI, appointmentsAPI } from '../services/api';
+import { clientsAPI, expedientesAPI, appointmentsAPI, chatAPI } from '../services/api';
 
 interface DashboardProps {
   onNavigate?: (view: NavigationItem) => void;
@@ -18,7 +18,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const [showClientModal, setShowClientModal] = useState(false);
   const [showExpedienteModal, setShowExpedienteModal] = useState(false);
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
-  const { messages, isLoading, inputValue, setInputValue, handleSendMessage } = useChatAssistant();
+  const { messages, isLoading, inputValue, setInputValue, handleSendMessage, loadMessages, clearMessages } = useChatAssistant();
+  const [chatHistory, setChatHistory] = useState<any[]>([]);
+  const [showChatHistory, setShowChatHistory] = useState(false);
+  // currentChatId not needed locally; server ids handled in history objects
 
   const navigationOptions = [
     { id: 'cliente', label: 'Cliente', icon: Users, description: 'Crear nuevo cliente', action: () => setShowClientModal(true) },
@@ -28,6 +31,50 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
 
   const handleToolsClick = () => {
     setShowTools(!showTools);
+  };
+
+  const loadHistory = async () => {
+    try {
+      const res = await chatAPI.getConversations();
+      const convs = res.data?.conversations || [];
+      setChatHistory(convs.map((c: any) => ({ ...c, id: c._id })));
+    } catch (e) {
+      // fallback to localStorage
+      try {
+        const raw = localStorage.getItem('ava_chat_conversations_v1');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          setChatHistory(parsed);
+        }
+      } catch (err) {}
+    }
+  };
+
+  React.useEffect(() => {
+    loadHistory();
+  }, []);
+
+  const handleSelectConversation = (conv: any) => {
+    // conv.messages expected in same shape as ChatMessage
+    loadMessages(conv.messages || []);
+    setShowChatHistory(false);
+    // ensure messages area is visible (messages exist)
+  };
+
+  const handleStartNewChat = async () => {
+    clearMessages();
+    // create on server if possible
+    // create on server if possible
+    try {
+      const res = await chatAPI.createConversation({ title: 'Conversación nueva', messages: [] });
+      const serverConv = res.data?.conversation;
+      if (serverConv && serverConv._id) {
+        // refresh history
+        await loadHistory();
+      }
+    } catch (e) {
+      // ignore, local empty chat is fine
+    }
   };
 
   const handleOptionClick = (option: any) => {
@@ -205,6 +252,30 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
               </div>
 
             </form>
+                {/* Left area: history link under the bar */}
+                <div className="mt-2 flex items-center justify-between px-1">
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => { setShowChatHistory(prev => !prev); if (!showChatHistory) loadHistory(); }}
+                      className="text-sm text-blue-600 hover:underline flex items-center gap-1"
+                    >
+                      <List className="w-4 h-4" />
+                      Historial de chats
+                    </button>
+                    {showChatHistory && (
+                      <div className="absolute left-0 mt-10 bg-white border border-gray-200 rounded shadow z-50 max-h-60 overflow-y-auto w-64 p-2">
+                        {chatHistory.length === 0 && <div className="text-sm text-gray-500 p-2">No hay conversaciones.</div>}
+                        {chatHistory.map((c) => (
+                          <div key={c.id} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
+                            <button className="text-left text-sm text-gray-800 truncate" onClick={() => handleSelectConversation(c)}>{c.title || c.serverId || c.id}</button>
+                            <span className="text-xs text-gray-400">{c.updatedAt ? new Date(c.updatedAt).toLocaleString() : ''}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
 
             {/* Menú desplegable de herramientas - Solo visible cuando no hay mensajes */}
             {showTools && !hasMessages && (
@@ -215,6 +286,16 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                 <div className="p-3">
                   <h3 className="text-xs font-medium text-gray-700 mb-2 px-1">Agregar</h3>
                   <div className="space-y-1">
+                    <button
+                      onClick={() => { handleStartNewChat(); setShowTools(false); }}
+                      className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-blue-50 transition-all duration-200 text-left group"
+                      title="Nueva conversación"
+                    >
+                      <div className="w-6 h-6 bg-gray-100 rounded-md flex items-center justify-center group-hover:bg-blue-100 transition-colors duration-200">
+                        <List className="w-3.5 h-3.5 text-gray-600 group-hover:text-blue-600 transition-colors duration-200" />
+                      </div>
+                      <span className="text-sm font-medium text-gray-700 group-hover:text-blue-700 transition-colors duration-200">Chat</span>
+                    </button>
                     {navigationOptions.map((option) => {
                       const Icon = option.icon;
                       return (
