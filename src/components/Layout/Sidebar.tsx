@@ -46,7 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isCollapse
           {!isCollapsed && (
             <div>
               <h2 className="font-bold text-gray-900 text-sm">AVA</h2>
-              <p className="text-xs text-gray-500">Asistente Jurídico</p>
+              <p className="text-xs text-gray-500">Abogado Virtual Asistente</p>
             </div>
           )}
         </div>
