@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { LogIn, Mail, Lock, Building } from 'lucide-react';
+import { LogIn, Mail, Lock } from 'lucide-react';
+import Logo from '../../Logo.png';
 import { useAuth } from '../contexts/AuthContext';
 
 const LoginForm: React.FC = () => {
-  const [email, setEmail] = useState('maria@bufeteava.com');
-  const [password, setPassword] = useState('demo123');
+  // Iniciales vacías para forzar ingreso del usuario (no exponer credenciales por defecto)
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const { login, isLoading } = useAuth();
 
@@ -22,10 +24,10 @@ const LoginForm: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
         <div className="text-center mb-8">
-          <div className="mx-auto w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mb-4">
-            <Building className="w-8 h-8 text-white" />
+          <div className="mx-auto w-20 h-20 rounded-full flex items-center justify-center mb-4 overflow-hidden">
+            <img src={Logo} alt="AVA Logo" className="w-full h-full object-contain" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">AVA Asistente Jurídico</h1>
+          <h1 className="text-2xl font-bold text-gray-900">AVA Abogado Virtual Asitente</h1>
           <p className="text-gray-600 mt-2">Inicia sesión en tu cuenta</p>
         </div>
 
@@ -86,15 +88,7 @@ const LoginForm: React.FC = () => {
           </button>
         </form>
 
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <p className="text-sm text-gray-600 font-medium mb-2">Credenciales de demo:</p>
-          <div className="space-y-1 text-xs text-gray-500">
-            <p><span className="font-medium">Administrador:</span> maria@bufeteava.com</p>
-            <p><span className="font-medium">Abogado:</span> carlos@bufeteava.com</p>
-            <p><span className="font-medium">Asistente:</span> ana@bufeteava.com</p>
-            <p><span className="font-medium">Contraseña:</span> demo123</p>
-          </div>
-        </div>
+        {/* Se removieron las credenciales de demo del UI por seguridad. Solicita a tu administrador las cuentas de acceso. */}
       </div>
     </div>
   );
