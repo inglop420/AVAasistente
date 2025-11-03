@@ -36,18 +36,26 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const loadHistory = async () => {
     try {
       const res = await chatAPI.getConversations();
-      const convs = res.data?.conversations || [];
-      setChatHistory(convs.map((c: any) => ({ ...c, id: c._id })));
+      const convs = (res.data?.conversations || []);
+      if (Array.isArray(convs) && convs.length > 0) {
+        setChatHistory(convs.map((c: any) => ({ ...c, id: c._id || c.id })));
+        return;
+      }
     } catch (e) {
       // fallback to localStorage
-      try {
-        const raw = localStorage.getItem('ava_chat_conversations_v1');
-        if (raw) {
-          const parsed = JSON.parse(raw);
-          setChatHistory(parsed);
-        }
-      } catch (err) {}
     }
+
+    // fallback to localStorage or empty
+    try {
+      const raw = localStorage.getItem('ava_chat_conversations_v1');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        setChatHistory(parsed.map((c: any) => ({ ...c, id: c.id || c.serverId || (c._id ? c._id : Date.now().toString()) })) );
+        return;
+      }
+    } catch (err) {}
+
+    setChatHistory([]);
   };
 
   React.useEffect(() => {
@@ -277,8 +285,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                   </div>
                 </div>
 
-            {/* Menú desplegable de herramientas - Solo visible cuando no hay mensajes */}
-            {showTools && !hasMessages && (
+            {/* Menú desplegable de herramientas */}
+            {showTools && (
               <div className="absolute bottom-full left-0 mb-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 animate-in slide-in-from-bottom-2 duration-200">
                 {/* Flecha apuntando al botón + */}
                 <div className="absolute -bottom-1 left-4 w-2 h-2 bg-white border-r border-b border-gray-200 transform rotate-45"></div>
