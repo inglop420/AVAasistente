@@ -21,6 +21,7 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isCollapsed }) => {
   const { user, logout } = useAuth();
+  const [showUserMenu, setShowUserMenu] = React.useState(false);
 
   const menuItems = [
     { id: 'dashboard' as NavigationItem, label: 'Inicio', icon: Home },
@@ -29,10 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isCollapse
     { id: 'agenda' as NavigationItem, label: 'Agenda', icon: Calendar },
     { id: 'documentos' as NavigationItem, label: 'Documentos', icon: FileText },
     { id: 'biblioteca' as NavigationItem, label: 'Biblioteca', icon: BookOpen },
-    ...(user && ['admin', 'superadmin'].includes(user.role) ? [
-      { id: 'admin' as NavigationItem, label: 'Administración', icon: Settings }
-    ] : []),
-    { id: 'configuracion' as NavigationItem, label: 'Configuración', icon: Settings },
+    // 'Administración' and 'Configuración' se mostrarán dentro del menú del usuario
   ];
 
   return (
@@ -90,12 +88,38 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isCollapse
 
       {/* User section */}
       <div className={`border-t border-gray-100 ${isCollapsed ? 'p-2' : 'p-3'}`}>
-        {!isCollapsed && (
+        {!isCollapsed ? (
           <div className="mb-2">
-            <p className="text-xs font-medium text-gray-900">{user?.name}</p>
-            <p className="text-xs text-gray-500">{user?.role}</p>
+            <button
+              onClick={() => setShowUserMenu(prev => !prev)}
+              className="w-full text-left"
+            >
+              <p className="text-xs font-medium text-gray-900">{user?.name}</p>
+              <p className="text-xs text-gray-500">{user?.role}</p>
+            </button>
+
+            {showUserMenu && (
+              <div className="mt-2 space-y-1">
+                <button
+                  onClick={() => { setShowUserMenu(false); onViewChange('configuracion'); }}
+                  className="w-full text-left text-sm text-gray-600 px-2 py-1 rounded hover:bg-gray-100"
+                >
+                  <Settings className="inline w-4 h-4 mr-2" /> Configuración
+                </button>
+
+                {user && ['admin', 'superadmin'].includes(user.role) && (
+                  <button
+                    onClick={() => { setShowUserMenu(false); onViewChange('admin'); }}
+                    className="w-full text-left text-sm text-gray-600 px-2 py-1 rounded hover:bg-gray-100"
+                  >
+                    <Settings className="inline w-4 h-4 mr-2" /> Administración
+                  </button>
+                )}
+              </div>
+            )}
           </div>
-        )}
+        ) : null}
+
         <button
           onClick={logout}
           title={isCollapsed ? 'Cerrar Sesión' : undefined}

@@ -102,8 +102,8 @@ const MainApp: React.FC = () => {
         </div>
       )}
 
-      {/* Floating Assistant - Siempre visible */}
-      <FloatingAssistant />
+  {/* Floating Assistant - visible en todas las vistas excepto la principal (dashboard) */}
+  {currentView !== 'dashboard' && <FloatingAssistant />}
     </div>
   );
 };
