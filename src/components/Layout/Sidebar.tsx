@@ -8,8 +8,8 @@ import {
   BookOpen, 
   Settings,
   LogOut,
-  Building
 } from 'lucide-react';
+import Logo from '../../../Logo.png';
 import { NavigationItem } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -20,7 +20,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isCollapsed }) => {
-  const { user, organization, logout } = useAuth();
+  const { user, logout } = useAuth();
 
   const menuItems = [
     { id: 'dashboard' as NavigationItem, label: 'Inicio', icon: Home },
@@ -40,8 +40,8 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, onViewChange, isCollapse
       {/* Header */}
       <div className={`border-b border-gray-100 ${isCollapsed ? 'p-2' : 'p-3'}`}>
         <div className="flex items-center gap-3">
-          <div className={`bg-blue-600 rounded-lg flex items-center justify-center ${isCollapsed ? 'w-10 h-10' : 'w-8 h-8'}`}>
-            <Building className={`text-white ${isCollapsed ? 'w-6 h-6' : 'w-4 h-4'}`} />
+          <div className={`${isCollapsed ? 'w-10 h-10' : 'w-12 h-12'} rounded-lg flex items-center justify-center overflow-hidden`}>
+            <img src={Logo} alt="AVA Logo" className={`w-full h-full object-contain`} />
           </div>
           {!isCollapsed && (
             <div>

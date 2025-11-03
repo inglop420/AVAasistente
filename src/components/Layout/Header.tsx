@@ -1,6 +1,5 @@
 import React from 'react';
 import { Menu, Bell, Search } from 'lucide-react';
-import Logo from '../../../Logo.png';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface HeaderProps {
@@ -22,7 +21,6 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
           </button>
 
           <div className="flex items-center gap-3">
-            <img src={Logo} alt="AVA Logo" className="w-10 h-10 object-contain" />
             <div className="hidden sm:block">
               <div className="text-sm font-semibold text-gray-900">AVA Abogado Virtual Asitente</div>
               <div className="text-xs text-gray-500">Plataforma de gestión</div>
